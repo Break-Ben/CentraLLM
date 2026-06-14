@@ -1,13 +1,14 @@
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
+import { MainView } from '@/components/main-view'
 
 export default function App(): React.JSX.Element {
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <main className="p-4">
-          <p>Hello World</p>
+        <main>
+          <MainView />
         </main>
       </SidebarInset>
     </SidebarProvider>
