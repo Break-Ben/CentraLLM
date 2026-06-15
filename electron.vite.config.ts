@@ -4,12 +4,31 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  main: {},
-  preload: {},
+  main: {
+    resolve: {
+      alias: {
+        '@main': resolve(__dirname, 'src/main'),
+        '@shared': resolve(__dirname, 'src/shared'),
+        '@preload': resolve(__dirname, 'src/preload'),
+        '@resources': resolve(__dirname, 'resources')
+      }
+    }
+  },
+  preload: {
+    resolve: {
+      alias: {
+        '@shared': resolve(__dirname, 'src/shared'),
+        '@preload': resolve(__dirname, 'src/preload')
+      }
+    }
+  },
   renderer: {
     resolve: {
       alias: {
-        '@': resolve('src/renderer/src')
+        '@': resolve(__dirname, 'src/renderer/src'),
+        '@shared': resolve(__dirname, 'src/shared'),
+        '@preload': resolve(__dirname, 'src/preload'),
+        '@resources': resolve(__dirname, 'resources')
       }
     },
     plugins: [react(), tailwindcss()]

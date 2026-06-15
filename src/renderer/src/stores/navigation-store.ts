@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type Page = 'home' | 'settings'
+export type Page = { type: 'home' } | { type: 'chat'; id: number | null } | { type: 'settings' }
 
 type NavigationStore = {
   page: Page
@@ -8,6 +8,6 @@ type NavigationStore = {
 }
 
 export const useNavigationStore = create<NavigationStore>((set) => ({
-  page: 'home',
+  page: { type: 'home' },
   setPage: (page) => set({ page })
 }))

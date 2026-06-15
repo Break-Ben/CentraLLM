@@ -7,7 +7,7 @@ export default function App(): React.JSX.Element {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <main>
+        <main className="flex min-h-0 flex-1">
           <MainView />
         </main>
       </SidebarInset>
