@@ -3,14 +3,14 @@ import { useEffect } from 'react'
 import { Plus, House, Settings } from 'lucide-react'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
-import { getChatDisplayName } from '@shared/chat'
+import { SidebarChat } from '@/components/sidebar/sidebar-chat'
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
   const setPage = useNavigationStore((state) => state.setPage)
 
   const chats = useChatStore((state) => state.chats)
-  const { setChats, openChat, newChat } = useChatStore((state) => state.actions)
+  const { setChats, newChat } = useChatStore((state) => state.actions)
 
   useEffect(() => {
     let cancelled = false
@@ -63,17 +63,7 @@ export function AppSidebar(): React.JSX.Element {
           <SidebarGroupContent>
             <SidebarMenu>
               {chats.map((chat) => (
-                <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton
-                    isActive={page.type === 'chat' && page.id === chat.id}
-                    onClick={() => {
-                      setPage({ type: 'chat', id: chat.id })
-                      void openChat(chat.id)
-                    }}
-                  >
-                    <span>{getChatDisplayName(chat)}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <SidebarChat key={chat.id} chat={chat} />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
