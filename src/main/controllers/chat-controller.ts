@@ -1,6 +1,6 @@
 import { BrowserWindow, shell, WebContentsView } from 'electron'
 import { getChatUrl, getNewChatUrl, extractChatLocation, type ChatLocation, type ChatProviderId } from '@shared/chat'
-import { ChatRepository } from '@main/chat-db'
+import { ChatRepository } from '@main/repos/chat-repo'
 import { ViewBounds } from '@shared/layout'
 
 const DEFAULT_PROVIDER_ID: ChatProviderId = 'chatgpt'
