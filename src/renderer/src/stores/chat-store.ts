@@ -1,12 +1,12 @@
 import { create } from 'zustand'
-import type { ChatRecord } from '@shared/chat'
+import type { ChatProviderId, ChatRecord } from '@shared/chat'
 
 type ChatStore = {
   chats: ChatRecord[]
   actions: {
     setChats: (chats: ChatRecord[]) => void
     openChat: (chatId: number) => Promise<void>
-    newChat: () => Promise<void>
+    newChat: (providerId?: ChatProviderId) => Promise<void>
   }
 }
 
@@ -17,8 +17,8 @@ export const useChatStore = create<ChatStore>((set) => ({
     openChat: async (chatId) => {
       await window.api.chats.open(chatId)
     },
-    newChat: async () => {
-      await window.api.chats.new()
+    newChat: async (providerId?: ChatProviderId) => {
+      await window.api.chats.new(providerId)
     }
   }
 }))

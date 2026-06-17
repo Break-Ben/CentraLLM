@@ -1,7 +1,5 @@
 import Database from 'better-sqlite3'
-import { app } from 'electron'
-import { join } from 'path'
-import { type ChatLocation, type ChatRecord } from '@shared/chat'
+import { ChatLocation, ChatRecord } from '@shared/chat'
 
 const SELECT_COLUMNS = `
   id,
@@ -12,7 +10,6 @@ const SELECT_COLUMNS = `
 `
 
 export class ChatRepository {
-  private readonly db: Database
   private readonly listChatsQuery: Database.Statement
   private readonly getChatByIdQuery: Database.Statement
   private readonly getChatByLocationQuery: Database.Statement
@@ -20,10 +17,7 @@ export class ChatRepository {
   private readonly upsertChatQuery: Database.Statement
   private readonly updateLastOpenedQuery: Database.Statement
 
-  constructor() {
-    this.db = new Database(join(app.getPath('userData'), 'centrallm.db'))
-    this.db.pragma('journal_mode = WAL')
-
+  constructor(private readonly db: Database.Database) {
     this.ensureSchema()
 
     this.listChatsQuery = this.db.prepare(`
@@ -55,7 +49,6 @@ export class ChatRepository {
       INSERT INTO chats (provider_id, chat_id, title, last_opened_at)
       VALUES (?, ?, ?, ?)
       ON CONFLICT(provider_id, chat_id) DO UPDATE SET
-        -- Only overwrite the title if the incoming title is NOT an empty string
         title = CASE WHEN excluded.title <> '' THEN excluded.title ELSE chats.title END,
         last_opened_at = excluded.last_opened_at
       RETURNING ${SELECT_COLUMNS}
@@ -67,10 +60,6 @@ export class ChatRepository {
       WHERE id = ?
       RETURNING ${SELECT_COLUMNS}
     `)
-  }
-
-  close(): void {
-    this.db.close()
   }
 
   listChats(): ChatRecord[] {

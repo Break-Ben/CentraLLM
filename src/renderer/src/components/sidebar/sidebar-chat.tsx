@@ -2,6 +2,7 @@ import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { ChatRecord, getChatDisplayName } from '@shared/chat'
+import { ChatProviderIcon } from '@/components/chat-provider-icon'
 
 interface SidebarChatProps {
   chat: ChatRecord
@@ -21,6 +22,7 @@ export function SidebarChat({ chat }: SidebarChatProps): React.JSX.Element {
           void openChat(chat.id)
         }}
       >
+        <ChatProviderIcon providerId={chat.providerId} />
         <span>{getChatDisplayName(chat)}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>

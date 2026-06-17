@@ -1,5 +1,7 @@
 import type { ChatProviderId, ChatRecord } from '@shared/chat'
-import { ViewBounds } from '@shared/layout'
+import type { ViewBounds } from '@shared/layout'
+import type { AppState } from '@shared/app-state'
+import type { Preferences } from '@shared/preferences'
 
 declare global {
   interface Window {
@@ -15,6 +17,14 @@ declare global {
       layout: {
         setWebviewBounds: (bounds: ViewBounds) => void
         setWebviewVisible: (visible: boolean) => void
+      }
+      appState: {
+        getAll: () => Promise<AppState>
+        set: <K extends keyof AppState>(key: K, value: AppState[K]) => Promise<void>
+      }
+      preferences: {
+        getAll: () => Promise<Preferences>
+        set: <K extends keyof Preferences>(key: K, value: Preferences[K]) => Promise<void>
       }
     }
   }

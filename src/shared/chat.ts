@@ -24,9 +24,9 @@ export const CHAT_PROVIDERS = new Map<ChatProviderId, ChatProvider>([
     {
       id: 'chatgpt',
       name: 'ChatGPT',
-      newChatUrl: 'https://chatgpt.com/',
+      newChatUrl: 'https://chatgpt.com',
       chatUrlPrefix: 'https://chatgpt.com/c/',
-      chatUrlTemplate: 'https://chatgpt.com/c/{{chatId}}/'
+      chatUrlTemplate: 'https://chatgpt.com/c/{{chatId}}'
     }
   ],
   [
@@ -34,9 +34,9 @@ export const CHAT_PROVIDERS = new Map<ChatProviderId, ChatProvider>([
     {
       id: 'gemini',
       name: 'Gemini',
-      newChatUrl: 'https://gemini.google.com/app/',
+      newChatUrl: 'https://gemini.google.com/app',
       chatUrlPrefix: 'https://gemini.google.com/app/',
-      chatUrlTemplate: 'https://gemini.google.com/app/{{chatId}}/'
+      chatUrlTemplate: 'https://gemini.google.com/app/{{chatId}}'
     }
   ],
   [
@@ -44,12 +44,13 @@ export const CHAT_PROVIDERS = new Map<ChatProviderId, ChatProvider>([
     {
       id: 'claude',
       name: 'Claude',
-      newChatUrl: 'https://claude.ai/new/',
+      newChatUrl: 'https://claude.ai/new',
       chatUrlPrefix: 'https://claude.ai/chat/',
-      chatUrlTemplate: 'https://claude.ai/chat/{{chatId}}/'
+      chatUrlTemplate: 'https://claude.ai/chat/{{chatId}}'
     }
   ]
 ])
+export const CHAT_PROVIDER_LIST = [...CHAT_PROVIDERS.values()]
 
 export function getChatProvider(providerId: ChatProviderId): ChatProvider {
   const provider = CHAT_PROVIDERS.get(providerId)
@@ -68,7 +69,7 @@ export function extractChatLocation(rawUrl: string): ChatLocation | null {
     }
 
     const href = url.href
-    for (const provider of CHAT_PROVIDERS.values()) {
+    for (const provider of CHAT_PROVIDER_LIST) {
       if (!href.startsWith(provider.chatUrlPrefix)) {
         continue
       }

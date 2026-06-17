@@ -1,16 +1,17 @@
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '@/components/ui/sidebar'
 import { useEffect } from 'react'
-import { Plus, House, Settings } from 'lucide-react'
+import { House, Settings } from 'lucide-react'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
+import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
   const setPage = useNavigationStore((state) => state.setPage)
 
   const chats = useChatStore((state) => state.chats)
-  const { setChats, newChat } = useChatStore((state) => state.actions)
+  const { setChats } = useChatStore((state) => state.actions)
 
   useEffect(() => {
     let cancelled = false
@@ -44,15 +45,7 @@ export function AppSidebar(): React.JSX.Element {
           </SidebarMenuItem>
 
           <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={() => {
-                setPage({ type: 'chat', id: null })
-                void newChat()
-              }}
-            >
-              <Plus />
-              <span>New Chat</span>
-            </SidebarMenuButton>
+            <NewChatSplitButton />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

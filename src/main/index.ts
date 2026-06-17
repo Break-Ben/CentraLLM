@@ -1,17 +1,26 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
+import Database from 'better-sqlite3'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '@resources/icon.png?asset'
 import { ChatController } from '@main/chat-controller'
 import { ChatRepository } from '@main/chat-db'
+import { AppStateRepository } from '@main/app-state-db'
+import { PreferencesRepository } from '@main/preferences-db'
 import { ChatProviderId } from '@shared/chat'
+import { AppState } from '@shared/app-state'
+import { Preferences } from '@shared/preferences'
 
 let mainWindow: BrowserWindow | null = null
-let chatRepository: ChatRepository | null = null
 let chatController: ChatController | null = null
 
+let db: Database.Database | null = null
+let chatRepo: ChatRepository | null = null
+let appStateRepo: AppStateRepository | null = null
+let preferencesRepo: PreferencesRepository | null = null
+
 function createWindow(): void {
-  if (!chatRepository) {
+  if (!chatRepo) {
     throw new Error('Chat repository is not initialised')
   }
 
@@ -28,7 +37,7 @@ function createWindow(): void {
     }
   })
 
-  chatController = new ChatController(mainWindow, chatRepository)
+  chatController = new ChatController(mainWindow, chatRepo)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
@@ -59,9 +68,13 @@ function createWindow(): void {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.break.centrallm')
 
-  chatRepository = new ChatRepository()
+  db = new Database(join(app.getPath('userData'), 'centrallm.db'))
+  db.pragma('journal_mode = WAL')
+  chatRepo = new ChatRepository(db)
+  appStateRepo = new AppStateRepository(db)
+  preferencesRepo = new PreferencesRepository(db)
 
-  ipcMain.handle('chats:list', () => chatRepository?.listChats() ?? [])
+  ipcMain.handle('chats:list', () => chatRepo?.listChats() ?? [])
   ipcMain.handle('chats:active', () => chatController?.getActiveChatId() ?? null)
   ipcMain.handle('chats:open', async (_event, chatId: number) => {
     await chatController?.openChat(chatId)
@@ -70,10 +83,15 @@ app.whenReady().then(() => {
     await chatController?.openNewChat(providerId)
   })
 
+  ipcMain.handle('appState:getAll', () => appStateRepo?.getAll() ?? {})
+  ipcMain.handle('appState:set', (_event, key: keyof AppState, value: AppState[typeof key]) => appStateRepo?.set(key, value))
+
+  ipcMain.handle('preferences:getAll', () => preferencesRepo?.getAll() ?? {})
+  ipcMain.handle('preferences:set', (_event, key: keyof Preferences, value: Preferences[typeof key]) => preferencesRepo?.set(key, value))
+
   ipcMain.on('view:set-bounds', (_event, bounds) => {
     chatController?.setBounds(bounds)
   })
-
   ipcMain.on('view:set-visible', (_event, visible: boolean) => {
     chatController?.setVisible(visible)
   })
@@ -92,7 +110,7 @@ app.whenReady().then(() => {
 })
 
 app.on('before-quit', () => {
-  chatRepository?.close()
+  db?.close()
 })
 
 app.on('window-all-closed', () => {
