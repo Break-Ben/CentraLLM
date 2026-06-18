@@ -1,7 +1,10 @@
+import { ThemeSelector } from '@/components/settings/theme-selector'
+
 export function SettingsPage(): React.JSX.Element {
   return (
     <div className="p-4">
-      <p>Settings</p>
+      <h1>Settings</h1>
+      <ThemeSelector />
     </div>
   )
 }

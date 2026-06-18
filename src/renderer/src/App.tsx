@@ -5,8 +5,11 @@ import { usePreferencesStore } from '@/stores/preferences-store'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { MainView } from '@/components/main-view'
+import { useThemeSync } from '@/hooks/use-theme-sync'
 
 export default function App(): React.JSX.Element {
+  useThemeSync()
+
   useEffect(() => {
     useAppStateStore.getState().actions.init()
     usePreferencesStore.getState().actions.init()
