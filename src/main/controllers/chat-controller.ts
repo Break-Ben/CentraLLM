@@ -1,5 +1,5 @@
 import { BrowserWindow, shell, WebContentsView } from 'electron'
-import { getChatUrl, getNewChatUrl, extractChatLocation, ChatLocation, ChatProviderId } from '@shared/chat'
+import { getChatUrl, getNewChatUrl, extractChatLocation, ChatLocation, ChatProviderId, cleanChatTitle } from '@shared/chat'
 import { ChatRepository } from '@main/repos/chat-repo'
 import { ViewBounds } from '@shared/layout'
 
@@ -110,11 +110,16 @@ export class ChatController {
   }
 
   private syncTitle(title: string): void {
-    if (!title.trim() || !this.currentLocation) {
+    if (!this.currentLocation) {
       return
     }
 
-    const chat = this.repository.upsertChat(this.currentLocation, title)
+    const chatTitle = cleanChatTitle(title, this.currentLocation.providerId)
+    if (!chatTitle) {
+      return
+    }
+
+    const chat = this.repository.upsertChat(this.currentLocation, chatTitle)
     this.activeId = chat.id
     this.window.setTitle(chat.title || 'CentraLLM')
     this.emitChatsChanged()

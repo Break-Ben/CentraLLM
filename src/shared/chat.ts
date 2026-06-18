@@ -6,6 +6,7 @@ export type ChatProvider = {
   newChatUrl: string
   chatUrlPrefix: string
   chatUrlTemplate: string
+  titleSuffix: string
 }
 
 export type ChatRecord = {
@@ -26,7 +27,8 @@ export const CHAT_PROVIDERS = new Map<ChatProviderId, ChatProvider>([
       name: 'ChatGPT',
       newChatUrl: 'https://chatgpt.com',
       chatUrlPrefix: 'https://chatgpt.com/c/',
-      chatUrlTemplate: 'https://chatgpt.com/c/{{chatId}}'
+      chatUrlTemplate: 'https://chatgpt.com/c/{{chatId}}',
+      titleSuffix: ''
     }
   ],
   [
@@ -36,7 +38,8 @@ export const CHAT_PROVIDERS = new Map<ChatProviderId, ChatProvider>([
       name: 'Gemini',
       newChatUrl: 'https://gemini.google.com/app',
       chatUrlPrefix: 'https://gemini.google.com/app/',
-      chatUrlTemplate: 'https://gemini.google.com/app/{{chatId}}'
+      chatUrlTemplate: 'https://gemini.google.com/app/{{chatId}}',
+      titleSuffix: ' - Google Gemini'
     }
   ],
   [
@@ -46,7 +49,8 @@ export const CHAT_PROVIDERS = new Map<ChatProviderId, ChatProvider>([
       name: 'Claude',
       newChatUrl: 'https://claude.ai/new',
       chatUrlPrefix: 'https://claude.ai/chat/',
-      chatUrlTemplate: 'https://claude.ai/chat/{{chatId}}'
+      chatUrlTemplate: 'https://claude.ai/chat/{{chatId}}',
+      titleSuffix: ' - Claude'
     }
   ]
 ])
@@ -100,10 +104,20 @@ export function getNewChatUrl(providerId: ChatProviderId): string {
   return getChatProvider(providerId).newChatUrl
 }
 
+export function cleanChatTitle(title: string, providerId: ChatProviderId): string {
+  const provider = getChatProvider(providerId)
+  const cleanedTitle = title.trim()
+
+  if (provider.titleSuffix && cleanedTitle.endsWith(provider.titleSuffix)) {
+    return cleanedTitle.slice(0, -provider.titleSuffix.length).trim()
+  }
+
+  return cleanedTitle
+}
+
 export function getChatDisplayName(chat: ChatRecord): string {
-  const title = chat.title.trim()
-  if (title) {
-    return title
+  if (chat.title) {
+    return chat.title
   }
 
   const provider = CHAT_PROVIDERS.get(chat.providerId)

@@ -13,17 +13,20 @@ export function SidebarChat({ chat }: SidebarChatProps): React.JSX.Element {
   const { setPage } = useNavigationStore((state) => state.actions)
   const { openChat } = useChatStore((state) => state.actions)
 
+  const displayName = getChatDisplayName(chat)
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         isActive={page.type === 'chat' && page.id === chat.id}
+        title={displayName}
         onClick={() => {
           setPage({ type: 'chat', id: chat.id })
           void openChat(chat.id)
         }}
       >
         <ChatProviderIcon providerId={chat.providerId} />
-        <span>{getChatDisplayName(chat)}</span>
+        <span>{displayName}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
   )
