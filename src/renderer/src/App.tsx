@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useChatStore } from '@/stores/chat-store'
 import { useAppStateStore } from '@/stores/app-state-store'
 import { usePreferencesStore } from '@/stores/preferences-store'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
@@ -9,6 +10,11 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     useAppStateStore.getState().actions.init()
     usePreferencesStore.getState().actions.init()
+    const cleanupChats = useChatStore.getState().actions.init()
+
+    return () => {
+      cleanupChats()
+    }
   }, [])
 
   return (
