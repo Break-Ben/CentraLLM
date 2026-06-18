@@ -3,10 +3,13 @@ import { getChatUrl, getNewChatUrl, extractChatLocation, ChatLocation, ChatProvi
 import { ChatRepository } from '@main/repos/chat-repo'
 import { ViewBounds } from '@shared/layout'
 
+const SYNC_TIMEOUT_MS = 50
+
 export class ChatController {
   private readonly view: WebContentsView
   private activeId: number | null = null
   private currentLocation: ChatLocation | null = null
+  private syncTimeout: NodeJS.Timeout | null = null
 
   constructor(
     private readonly window: BrowserWindow,
@@ -29,17 +32,9 @@ export class ChatController {
       return { action: 'deny' }
     })
 
-    this.view.webContents.on('did-navigate', (_event, url) => {
-      this.syncFromUrl(url)
-    })
-
-    this.view.webContents.on('did-navigate-in-page', (_event, url) => {
-      this.syncFromUrl(url)
-    })
-
-    this.view.webContents.on('page-title-updated', (_event, title) => {
-      this.syncTitle(title)
-    })
+    this.view.webContents.on('did-navigate', () => this.scheduleSync())
+    this.view.webContents.on('did-navigate-in-page', () => this.scheduleSync())
+    this.view.webContents.on('page-title-updated', () => this.scheduleSync())
   }
 
   getActiveChatId(): number | null {
@@ -74,8 +69,6 @@ export class ChatController {
     this.repository.updateLastOpened(chat.id)
 
     this.view.setVisible(true)
-    this.window.setTitle(chat.title || 'CentraLLM')
-
     await this.view.webContents.loadURL(getChatUrl(this.currentLocation)).catch(() => undefined)
   }
 
@@ -91,37 +84,40 @@ export class ChatController {
   }
 
   destroy(): void {
+    if (this.syncTimeout) {
+      clearTimeout(this.syncTimeout)
+    }
     this.view.webContents.close()
   }
 
-  private syncFromUrl(rawUrl: string): void {
-    const location = extractChatLocation(rawUrl)
+  private scheduleSync(): void {
+    if (this.syncTimeout) {
+      clearTimeout(this.syncTimeout)
+    }
+    this.syncTimeout = setTimeout(() => {
+      this.performSync()
+    }, SYNC_TIMEOUT_MS)
+  }
+
+  private performSync(): void {
+    const currentUrl = this.view.webContents.getURL()
+    const currentTitle = this.view.webContents.getTitle()
+
+    const location = extractChatLocation(currentUrl)
     if (!location) {
       this.currentLocation = null
       return
     }
     this.currentLocation = location
 
-    const chat = this.repository.upsertChat(location, this.view.webContents.getTitle())
-    this.activeId = chat.id
-    this.window.setTitle(chat.title || 'CentraLLM')
-    this.emitChatsChanged()
-    this.emitActiveChatChanged(chat.id)
-  }
-
-  private syncTitle(title: string): void {
-    if (!this.currentLocation) {
-      return
-    }
-
-    const chatTitle = cleanChatTitle(title, this.currentLocation.providerId)
+    const chatTitle = cleanChatTitle(currentTitle, location.providerId)
     if (!chatTitle) {
       return
     }
 
-    const chat = this.repository.upsertChat(this.currentLocation, chatTitle)
+    const chat = this.repository.upsertChat(location, chatTitle)
     this.activeId = chat.id
-    this.window.setTitle(chat.title || 'CentraLLM')
+    this.window.setTitle(chat.title ? `${chat.title} - CentraLLM` : 'CentraLLM')
     this.emitChatsChanged()
     this.emitActiveChatChanged(chat.id)
   }

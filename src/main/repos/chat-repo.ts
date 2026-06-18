@@ -80,7 +80,7 @@ export class ChatRepository {
 
   upsertChat(location: ChatLocation, title?: string): ChatRecord {
     const now = Date.now()
-    return this.upsertChatQuery.get(location.providerId, location.chatId, title?.trim() ?? '', now)!
+    return this.upsertChatQuery.get(location.providerId, location.chatId, title ?? '', now)!
   }
 
   updateLastOpened(id: number): ChatRecord | undefined {
