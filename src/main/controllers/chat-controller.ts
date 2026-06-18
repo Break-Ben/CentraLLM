@@ -1,15 +1,17 @@
 import { BrowserWindow, shell, WebContentsView } from 'electron'
-import { getChatUrl, getNewChatUrl, extractChatLocation, ChatLocation, ChatProviderId, cleanChatTitle } from '@shared/chat'
+import { getChatUrl, getNewChatUrl, extractChatLocation, ChatLocation, ChatProviderId, cleanChatTitle, ChatRecord } from '@shared/chat'
 import { ChatRepository } from '@main/repos/chat-repo'
 import { ViewBounds } from '@shared/layout'
 
 const SYNC_TIMEOUT_MS = 50
+const TITLE_PROTECTION_DELAY_MS = 5000
 
 export class ChatController {
   private readonly view: WebContentsView
   private activeId: number | null = null
   private currentLocation: ChatLocation | null = null
   private syncTimeout: NodeJS.Timeout | null = null
+  private protectionTimeout: NodeJS.Timeout | null = null
 
   constructor(
     private readonly window: BrowserWindow,
@@ -66,15 +68,22 @@ export class ChatController {
       providerId: chat.providerId,
       chatId: chat.chatId
     }
+
     this.repository.updateLastOpened(chat.id)
+    this.emitChatsChanged()
+    this.startTitleProtection()
 
     this.view.setVisible(true)
+    this.updateAppTitle(chat)
+    this.emitActiveChatChanged(chat.id)
+
     await this.view.webContents.loadURL(getChatUrl(this.currentLocation)).catch(() => undefined)
   }
 
   async openNewChat(providerId: ChatProviderId): Promise<void> {
     this.activeId = null
     this.currentLocation = null
+    this.clearTitleProtection()
 
     this.view.setVisible(true)
     this.window.setTitle('CentraLLM')
@@ -84,6 +93,7 @@ export class ChatController {
   }
 
   destroy(): void {
+    this.clearTitleProtection()
     if (this.syncTimeout) {
       clearTimeout(this.syncTimeout)
     }
@@ -110,6 +120,21 @@ export class ChatController {
     }
     this.currentLocation = location
 
+    const existingChat = this.repository.getChatByLocation(this.currentLocation)
+
+    if (existingChat && existingChat.id !== this.activeId) {
+      this.activeId = existingChat.id
+      this.repository.updateLastOpened(existingChat.id)
+      this.emitChatsChanged()
+      this.startTitleProtection()
+    }
+
+    if (existingChat && this.protectionTimeout) {
+      this.updateAppTitle(existingChat)
+      this.emitActiveChatChanged(existingChat.id)
+      return
+    }
+
     const chatTitle = cleanChatTitle(currentTitle, location.providerId)
     if (!chatTitle) {
       return
@@ -117,9 +142,30 @@ export class ChatController {
 
     const chat = this.repository.upsertChat(location, chatTitle)
     this.activeId = chat.id
-    this.window.setTitle(chat.title ? `${chat.title} - CentraLLM` : 'CentraLLM')
+    this.updateAppTitle(chat)
     this.emitChatsChanged()
     this.emitActiveChatChanged(chat.id)
+  }
+
+  private startTitleProtection(): void {
+    if (this.protectionTimeout) {
+      clearTimeout(this.protectionTimeout)
+    }
+    this.protectionTimeout = setTimeout(() => {
+      this.protectionTimeout = null
+      this.performSync()
+    }, TITLE_PROTECTION_DELAY_MS)
+  }
+
+  private clearTitleProtection(): void {
+    if (this.protectionTimeout) {
+      clearTimeout(this.protectionTimeout)
+      this.protectionTimeout = null
+    }
+  }
+
+  private updateAppTitle(chat?: ChatRecord): void {
+    this.window.setTitle(chat?.title ? `${chat.title} - CentraLLM` : 'CentraLLM')
   }
 
   private emitChatsChanged(): void {
