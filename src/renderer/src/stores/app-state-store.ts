@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { DEFAULTS, type AppState } from '@shared/app-state'
+import { DEFAULTS, AppState } from '@shared/app-state'
 
 type AppStateStore = AppState & {
   actions: {

@@ -1,4 +1,4 @@
-import type { ChatProviderId } from '@shared/chat'
+import { ChatProviderId } from '@shared/chat'
 
 export interface AppState {
   lastUsedProviderId: ChatProviderId

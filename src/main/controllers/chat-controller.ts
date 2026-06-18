@@ -1,9 +1,7 @@
 import { BrowserWindow, shell, WebContentsView } from 'electron'
-import { getChatUrl, getNewChatUrl, extractChatLocation, type ChatLocation, type ChatProviderId } from '@shared/chat'
+import { getChatUrl, getNewChatUrl, extractChatLocation, ChatLocation, ChatProviderId } from '@shared/chat'
 import { ChatRepository } from '@main/repos/chat-repo'
 import { ViewBounds } from '@shared/layout'
-
-const DEFAULT_PROVIDER_ID: ChatProviderId = 'chatgpt'
 
 export class ChatController {
   private readonly view: WebContentsView
@@ -81,7 +79,7 @@ export class ChatController {
     await this.view.webContents.loadURL(getChatUrl(this.currentLocation)).catch(() => undefined)
   }
 
-  async openNewChat(providerId: ChatProviderId = DEFAULT_PROVIDER_ID): Promise<void> {
+  async openNewChat(providerId: ChatProviderId): Promise<void> {
     this.activeId = null
     this.currentLocation = null
 

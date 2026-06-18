@@ -1,9 +1,14 @@
 import Database from 'better-sqlite3'
 import { Preferences, DEFAULTS } from '@shared/preferences'
 
+interface PreferencesRow {
+  key: string
+  value: string
+}
+
 export class PreferencesRepository {
-  private readonly getAllQuery: Database.Statement
-  private readonly setQuery: Database.Statement
+  private readonly getAllQuery: Database.Statement<[], PreferencesRow>
+  private readonly setQuery: Database.Statement<[string, string], void>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -20,7 +25,7 @@ export class PreferencesRepository {
   }
 
   getAll(): Preferences {
-    const rows = this.getAllQuery.all() as { key: string; value: string }[]
+    const rows = this.getAllQuery.all()
     const stored = Object.fromEntries(rows.map((r) => [r.key, JSON.parse(r.value)]))
     return { ...DEFAULTS, ...stored }
   }

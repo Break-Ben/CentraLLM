@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ChatProviderId, ChatRecord } from '@shared/chat'
+import { ChatProviderId, ChatRecord } from '@shared/chat'
 
 type ChatStore = {
   chats: ChatRecord[]

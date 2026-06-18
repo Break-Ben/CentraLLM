@@ -10,12 +10,12 @@ const SELECT_COLUMNS = `
 `
 
 export class ChatRepository {
-  private readonly listChatsQuery: Database.Statement
-  private readonly getChatByIdQuery: Database.Statement
-  private readonly getChatByLocationQuery: Database.Statement
-  private readonly getMostRecentChatQuery: Database.Statement
-  private readonly upsertChatQuery: Database.Statement
-  private readonly updateLastOpenedQuery: Database.Statement
+  private readonly listChatsQuery: Database.Statement<[], ChatRecord>
+  private readonly getChatByIdQuery: Database.Statement<[number], ChatRecord>
+  private readonly getChatByLocationQuery: Database.Statement<[string, string], ChatRecord>
+  private readonly getMostRecentChatQuery: Database.Statement<[], ChatRecord>
+  private readonly upsertChatQuery: Database.Statement<[string, string, string, number], ChatRecord>
+  private readonly updateLastOpenedQuery: Database.Statement<[number, number], ChatRecord>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -80,7 +80,7 @@ export class ChatRepository {
 
   upsertChat(location: ChatLocation, title?: string): ChatRecord {
     const now = Date.now()
-    return this.upsertChatQuery.get(location.providerId, location.chatId, title?.trim() ?? '', now)
+    return this.upsertChatQuery.get(location.providerId, location.chatId, title?.trim() ?? '', now)!
   }
 
   updateLastOpened(id: number): ChatRecord | undefined {

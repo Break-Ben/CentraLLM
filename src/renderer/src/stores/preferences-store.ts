@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { DEFAULTS, type Preferences } from '@shared/preferences'
+import { DEFAULTS, Preferences } from '@shared/preferences'
 
 type PreferencesStore = Preferences & {
   actions: {

@@ -10,7 +10,7 @@ interface SidebarChatProps {
 
 export function SidebarChat({ chat }: SidebarChatProps): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
-  const setPage = useNavigationStore((state) => state.setPage)
+  const { setPage } = useNavigationStore((state) => state.actions)
   const { openChat } = useChatStore((state) => state.actions)
 
   return (

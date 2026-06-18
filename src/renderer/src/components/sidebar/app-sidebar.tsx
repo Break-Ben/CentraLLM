@@ -8,7 +8,7 @@ import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
-  const setPage = useNavigationStore((state) => state.setPage)
+  const { setPage } = useNavigationStore((state) => state.actions)
 
   const chats = useChatStore((state) => state.chats)
   const { setChats } = useChatStore((state) => state.actions)

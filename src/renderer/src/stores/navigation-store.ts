@@ -4,10 +4,14 @@ export type Page = { type: 'home' } | { type: 'chat'; id: number | null } | { ty
 
 type NavigationStore = {
   page: Page
-  setPage: (page: Page) => void
+  actions: {
+    setPage: (page: Page) => void
+  }
 }
 
 export const useNavigationStore = create<NavigationStore>((set) => ({
   page: { type: 'home' },
-  setPage: (page) => set({ page })
+  actions: {
+    setPage: (page) => set({ page })
+  }
 }))

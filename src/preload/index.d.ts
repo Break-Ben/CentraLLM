@@ -1,7 +1,7 @@
-import type { ChatProviderId, ChatRecord } from '@shared/chat'
-import type { ViewBounds } from '@shared/layout'
-import type { AppState } from '@shared/app-state'
-import type { Preferences } from '@shared/preferences'
+import { ChatProviderId, ChatRecord } from '@shared/chat'
+import { ViewBounds } from '@shared/layout'
+import { AppState } from '@shared/app-state'
+import { Preferences } from '@shared/preferences'
 
 declare global {
   interface Window {
@@ -10,7 +10,7 @@ declare global {
         list: () => Promise<ChatRecord[]>
         getActive: () => Promise<number | null>
         open: (chatId: number) => Promise<void>
-        new: (providerId?: ChatProviderId) => Promise<void>
+        new: (providerId: ChatProviderId) => Promise<void>
         onChanged: (callback: (chats: ChatRecord[]) => void) => () => void
         onActiveChanged: (callback: (chatId: number | null) => void) => () => void
       }

@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import { ChatRecord } from '@shared/chat'
 import { ViewBounds } from '@shared/layout'
 import { AppState } from '@shared/app-state'
@@ -9,7 +9,7 @@ const api = {
     list: () => ipcRenderer.invoke('chats:list'),
     getActive: () => ipcRenderer.invoke('chats:active'),
     open: (chatId: number) => ipcRenderer.invoke('chats:open', chatId),
-    new: (providerId?: string) => ipcRenderer.invoke('chats:new', providerId ?? 'chatgpt'),
+    new: (providerId: string) => ipcRenderer.invoke('chats:new', providerId),
     onChanged: (callback: (chats: ChatRecord[]) => void) => {
       const listener = (_event: IpcRendererEvent, chats: ChatRecord[]) => callback(chats)
       ipcRenderer.on('chats:changed', listener)
