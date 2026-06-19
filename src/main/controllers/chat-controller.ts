@@ -29,9 +29,20 @@ export class ChatController {
     this.view.setVisible(false)
     this.window.contentView.addChildView(this.view)
 
-    this.view.webContents.setWindowOpenHandler(({ url }) => {
-      shell.openExternal(url)
-      return { action: 'deny' }
+    this.view.webContents.setWindowOpenHandler(({ url, disposition }) => {
+      if (disposition === 'foreground-tab' || disposition === 'background-tab') {
+        shell.openExternal(url)
+        return { action: 'deny' }
+      }
+
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          parent: this.window,
+          modal: true,
+          autoHideMenuBar: true
+        }
+      }
     })
 
     this.view.webContents.on('did-navigate', () => this.scheduleSync())
