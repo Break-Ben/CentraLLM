@@ -131,7 +131,10 @@ export class ChatController {
 
     if (existingChat && this.protectionTimeout) {
       this.updateAppTitle(existingChat)
-      this.emitActiveChatChanged(existingChat.id)
+      if (this.activeId !== existingChat.id) {
+        this.activeId = existingChat.id
+        this.emitActiveChatChanged(existingChat.id)
+      }
       return
     }
 
@@ -141,10 +144,14 @@ export class ChatController {
     }
 
     const chat = this.repository.upsertChat(location, chatTitle)
-    this.activeId = chat.id
+
+    if (this.activeId !== chat.id) {
+      this.activeId = chat.id
+      this.emitActiveChatChanged(chat.id)
+    }
+
     this.updateAppTitle(chat)
     this.emitChatsChanged()
-    this.emitActiveChatChanged(chat.id)
   }
 
   private startTitleProtection(): void {
