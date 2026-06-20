@@ -1,14 +1,84 @@
+import { useMemo, useState } from 'react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '@/components/ui/sidebar'
 import { House, Settings } from 'lucide-react'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
+import { useFolderStore } from '@/stores/folder-store'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
+import { SidebarFolder } from '@/components/sidebar/sidebar-folder'
 import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
+import { ChatRecord } from '@shared/chat'
+import { FolderNode, FolderRecord } from '@shared/folder'
+
+function buildTree(folders: FolderRecord[], chats: ChatRecord[]) {
+  const nodes = new Map<number, FolderNode>()
+
+  for (const folder of folders) {
+    nodes.set(folder.id, {
+      ...folder,
+      folders: [],
+      chats: []
+    })
+  }
+
+  const rootFolders: FolderNode[] = []
+  const rootChats: ChatRecord[] = []
+
+  for (const folder of folders) {
+    const node = nodes.get(folder.id)!
+    if (folder.parentFolderId === null) {
+      rootFolders.push(node)
+    } else {
+      const parent = nodes.get(folder.parentFolderId)
+      if (parent) {
+        parent.folders.push(node)
+      } else {
+        rootFolders.push(node)
+      }
+    }
+  }
+
+  for (const chat of chats) {
+    if (chat.folderId !== null) {
+      const folder = nodes.get(chat.folderId)
+      if (folder) {
+        folder.chats.push(chat)
+      } else {
+        rootChats.push(chat)
+      }
+    } else {
+      rootChats.push(chat)
+    }
+  }
+
+  return { rootFolders, rootChats }
+}
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
   const { setPage } = useNavigationStore((state) => state.actions)
   const chats = useChatStore((state) => state.chats)
+  const folders = useFolderStore((state) => state.folders)
+
+  const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(new Set())
+  const [prevFolders, setPrevFolders] = useState(folders)
+
+  if (folders !== prevFolders) {
+    setPrevFolders(folders)
+
+    const knownIds = new Set(prevFolders.map((folder) => folder.id))
+    const newlyCreatedIds = folders.filter((folder) => !knownIds.has(folder.id)).map((folder) => folder.id)
+
+    if (knownIds.size > 0 && newlyCreatedIds.length > 0) {
+      setExpandedFolderIds((current) => {
+        const next = new Set(current)
+        newlyCreatedIds.forEach((id) => next.add(id))
+        return next
+      })
+    }
+  }
+
+  const { rootFolders, rootChats } = useMemo(() => buildTree(folders, chats), [folders, chats])
 
   return (
     <Sidebar collapsible="icon">
@@ -32,8 +102,11 @@ export function AppSidebar(): React.JSX.Element {
           <SidebarGroupLabel>Chats</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {chats.map((chat) => (
+              {rootChats.map((chat) => (
                 <SidebarChat key={chat.id} chat={chat} />
+              ))}
+              {rootFolders.map((folder) => (
+                <SidebarFolder key={folder.id} folder={folder} expandedFolderIds={expandedFolderIds} setExpandedFolderIds={setExpandedFolderIds} />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>

@@ -14,7 +14,8 @@ export type ChatRecord = {
   providerId: ChatProviderId
   chatId: string
   title: string
-  lastOpenedAt: number | null
+  lastOpenedAt: number
+  folderId: number | null
 }
 
 export type ChatLocation = Pick<ChatRecord, 'providerId' | 'chatId'>

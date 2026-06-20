@@ -6,7 +6,8 @@ const SELECT_COLUMNS = `
   provider_id AS providerId,
   chat_id AS chatId,
   title,
-  last_opened_at AS lastOpenedAt
+  last_opened_at AS lastOpenedAt,
+  folder_id AS folderId
 `
 
 export class ChatRepository {
@@ -16,6 +17,7 @@ export class ChatRepository {
   private readonly getMostRecentChatQuery: Database.Statement<[], ChatRecord>
   private readonly upsertChatQuery: Database.Statement<[string, string, string, number], ChatRecord>
   private readonly updateLastOpenedQuery: Database.Statement<[number, number], ChatRecord>
+  private readonly setFolderQuery: Database.Statement<[number | null, number], ChatRecord>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -60,6 +62,13 @@ export class ChatRepository {
       WHERE id = ?
       RETURNING ${SELECT_COLUMNS}
     `)
+
+    this.setFolderQuery = this.db.prepare(`
+      UPDATE chats
+      SET folder_id = ?
+      WHERE id = ?
+      RETURNING ${SELECT_COLUMNS}
+    `)
   }
 
   listChats(): ChatRecord[] {
@@ -87,6 +96,10 @@ export class ChatRepository {
     return this.updateLastOpenedQuery.get(Date.now(), id)
   }
 
+  setFolder(id: number, folderId: number | null): ChatRecord | undefined {
+    return this.setFolderQuery.get(folderId, id)
+  }
+
   private ensureSchema(): void {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS chats (
@@ -95,11 +108,15 @@ export class ChatRepository {
         chat_id TEXT NOT NULL,
         title TEXT NOT NULL DEFAULT '',
         last_opened_at INTEGER NOT NULL,
+        folder_id INTEGER REFERENCES folders(id) ON DELETE SET NULL,
         UNIQUE(provider_id, chat_id)
       );
 
-      CREATE INDEX IF NOT EXISTS idx_chats_last_opened 
+      CREATE INDEX IF NOT EXISTS idx_chats_last_opened
       ON chats (last_opened_at DESC);
+
+      CREATE INDEX IF NOT EXISTS idx_chats_folder_id
+      ON chats (folder_id);
     `)
   }
 }

@@ -1,4 +1,4 @@
-import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import { SidebarMenuItem, SidebarMenuButton, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { ChatRecord, getChatDisplayName } from '@shared/chat'
@@ -6,18 +6,21 @@ import { ChatProviderIcon } from '@/components/chat-provider-icon'
 
 interface SidebarChatProps {
   chat: ChatRecord
+  isSub?: boolean
 }
 
-export function SidebarChat({ chat }: SidebarChatProps): React.JSX.Element {
+export function SidebarChat({ chat, isSub = false }: SidebarChatProps): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
   const { setPage } = useNavigationStore((state) => state.actions)
   const { openChat } = useChatStore((state) => state.actions)
 
   const displayName = getChatDisplayName(chat)
+  const ItemComponent = isSub ? SidebarMenuSubItem : SidebarMenuItem
+  const ButtonComponent = isSub ? SidebarMenuSubButton : SidebarMenuButton
 
   return (
-    <SidebarMenuItem>
-      <SidebarMenuButton
+    <ItemComponent>
+      <ButtonComponent
         isActive={page.type === 'chat' && page.id === chat.id}
         title={displayName}
         onClick={() => {
@@ -27,7 +30,7 @@ export function SidebarChat({ chat }: SidebarChatProps): React.JSX.Element {
       >
         <ChatProviderIcon providerId={chat.providerId} />
         <span>{displayName}</span>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
+      </ButtonComponent>
+    </ItemComponent>
   )
 }

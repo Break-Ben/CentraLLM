@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import { ChatRecord } from '@shared/chat'
+import { FolderRecord } from '@shared/folder'
 import { ViewBounds } from '@shared/layout'
 import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
@@ -10,6 +11,7 @@ const api = {
     getActive: () => ipcRenderer.invoke('chats:active'),
     open: (chatId: number) => ipcRenderer.invoke('chats:open', chatId),
     new: (providerId: string) => ipcRenderer.invoke('chats:new', providerId),
+    setFolder: (chatId: number, folderId: number | null) => ipcRenderer.invoke('chats:set-folder', chatId, folderId),
     onChanged: (callback: (chats: ChatRecord[]) => void) => {
       const listener = (_event: IpcRendererEvent, chats: ChatRecord[]) => callback(chats)
       ipcRenderer.on('chats:changed', listener)
@@ -19,6 +21,16 @@ const api = {
       const listener = (_event: IpcRendererEvent, chatId: number | null) => callback(chatId)
       ipcRenderer.on('chats:active-changed', listener)
       return () => ipcRenderer.removeListener('chats:active-changed', listener)
+    }
+  },
+  folders: {
+    list: () => ipcRenderer.invoke('folders:list'),
+    create: (name: string, parentFolderId?: number | null) => ipcRenderer.invoke('folders:create', name, parentFolderId ?? null),
+    delete: (folderId: number) => ipcRenderer.invoke('folders:delete', folderId),
+    onChanged: (callback: (folders: FolderRecord[]) => void) => {
+      const listener = (_event: IpcRendererEvent, folders: FolderRecord[]) => callback(folders)
+      ipcRenderer.on('folders:changed', listener)
+      return () => ipcRenderer.removeListener('folders:changed', listener)
     }
   },
   layout: {

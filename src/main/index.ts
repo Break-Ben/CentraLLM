@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '@resources/icon.png?asset'
 import { ChatController } from '@main/controllers/chat-controller'
 import { ChatRepository } from '@main/repos/chat-repo'
+import { FolderRepository } from '@main/repos/folder-repo'
 import { AppStateRepository } from '@main/repos/app-state-repo'
 import { PreferencesRepository } from '@main/repos/preferences-repo'
 import { ChatProviderId } from '@shared/chat'
@@ -16,6 +17,7 @@ let chatController: ChatController | null = null
 
 let db: Database.Database | null = null
 let chatRepo: ChatRepository | null = null
+let folderRepo: FolderRepository | null = null
 let appStateRepo: AppStateRepository | null = null
 let preferencesRepo: PreferencesRepository | null = null
 
@@ -70,10 +72,14 @@ app.whenReady().then(() => {
 
   db = new Database(join(app.getPath('userData'), 'centrallm.db'))
   db.pragma('journal_mode = WAL')
+  db.pragma('foreign_keys = ON')
+
   chatRepo = new ChatRepository(db)
+  folderRepo = new FolderRepository(db)
   appStateRepo = new AppStateRepository(db)
   preferencesRepo = new PreferencesRepository(db)
 
+  // Chats
   ipcMain.handle('chats:list', () => chatRepo?.listChats() ?? [])
   ipcMain.handle('chats:active', () => chatController?.getActiveChatId() ?? null)
   ipcMain.handle('chats:open', async (_event, chatId: number) => {
@@ -82,13 +88,33 @@ app.whenReady().then(() => {
   ipcMain.handle('chats:new', async (_event, providerId: ChatProviderId) => {
     await chatController?.openNewChat(providerId)
   })
+  ipcMain.handle('chats:set-folder', (_event, chatId: number, folderId: number | null) => {
+    chatRepo?.setFolder(chatId, folderId)
+    emitChatsChanged()
+  })
 
+  // Folders
+  ipcMain.handle('folders:list', () => folderRepo?.listFolders() ?? [])
+  ipcMain.handle('folders:create', (_event, name: string, parentFolderId: number | null) => {
+    const folder = folderRepo?.createFolder(name, parentFolderId ?? null) ?? null
+    emitFoldersChanged()
+    return folder
+  })
+  ipcMain.handle('folders:delete', (_event, folderId: number) => {
+    folderRepo?.deleteFolder(folderId)
+    emitChatsChanged()
+    emitFoldersChanged()
+  })
+
+  // App State
   ipcMain.handle('appState:getAll', () => appStateRepo?.getAll() ?? {})
   ipcMain.handle('appState:set', (_event, key: keyof AppState, value: AppState[typeof key]) => appStateRepo?.set(key, value))
 
+  // Preferences
   ipcMain.handle('preferences:getAll', () => preferencesRepo?.getAll() ?? {})
   ipcMain.handle('preferences:set', (_event, key: keyof Preferences, value: Preferences[typeof key]) => preferencesRepo?.set(key, value))
 
+  // Layout
   ipcMain.on('view:set-bounds', (_event, bounds) => {
     chatController?.setBounds(bounds)
   })
@@ -118,3 +144,11 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+function emitChatsChanged(): void {
+  mainWindow?.webContents.send('chats:changed', chatRepo?.listChats() ?? [])
+}
+
+function emitFoldersChanged(): void {
+  mainWindow?.webContents.send('folders:changed', folderRepo?.listFolders() ?? [])
+}
