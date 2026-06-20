@@ -4,6 +4,7 @@ import { House, Settings } from 'lucide-react'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useFolderStore } from '@/stores/folder-store'
+import { useAppStateStore } from '@/stores/app-state-store'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
 import { SidebarFolder } from '@/components/sidebar/sidebar-folder'
 import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
@@ -59,8 +60,9 @@ export function AppSidebar(): React.JSX.Element {
   const { setPage } = useNavigationStore((state) => state.actions)
   const chats = useChatStore((state) => state.chats)
   const folders = useFolderStore((state) => state.folders)
+  const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
+  const { set } = useAppStateStore((state) => state.actions)
 
-  const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(new Set())
   const [prevFolders, setPrevFolders] = useState(folders)
 
   if (folders !== prevFolders) {
@@ -70,11 +72,7 @@ export function AppSidebar(): React.JSX.Element {
     const newlyCreatedIds = folders.filter((folder) => !knownIds.has(folder.id)).map((folder) => folder.id)
 
     if (knownIds.size > 0 && newlyCreatedIds.length > 0) {
-      setExpandedFolderIds((current) => {
-        const next = new Set(current)
-        newlyCreatedIds.forEach((id) => next.add(id))
-        return next
-      })
+      void set('expandedFolderIds', [...expandedFolderIds, ...newlyCreatedIds])
     }
   }
 
@@ -106,7 +104,7 @@ export function AppSidebar(): React.JSX.Element {
                 <SidebarChat key={chat.id} chat={chat} />
               ))}
               {rootFolders.map((folder) => (
-                <SidebarFolder key={folder.id} folder={folder} expandedFolderIds={expandedFolderIds} setExpandedFolderIds={setExpandedFolderIds} />
+                <SidebarFolder key={folder.id} folder={folder} />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>

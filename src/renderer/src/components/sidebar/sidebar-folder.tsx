@@ -1,18 +1,19 @@
-import { Dispatch, SetStateAction } from 'react'
 import { ChevronRight, Folder } from 'lucide-react'
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
 import { FolderNode } from '@shared/folder'
+import { useAppStateStore } from '@/stores/app-state-store'
 
 interface SidebarFolderProps {
   folder: FolderNode
   isSub?: boolean
-  expandedFolderIds: Set<number>
-  setExpandedFolderIds: Dispatch<SetStateAction<Set<number>>>
 }
 
-export function SidebarFolder({ folder, isSub = false, expandedFolderIds, setExpandedFolderIds }: SidebarFolderProps): React.JSX.Element {
-  const isExpanded = expandedFolderIds.has(folder.id)
+export function SidebarFolder({ folder, isSub = false }: SidebarFolderProps): React.JSX.Element {
+  const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
+  const { set } = useAppStateStore((state) => state.actions)
+
+  const isExpanded = expandedFolderIds.includes(folder.id)
   const ItemComponent = isSub ? SidebarMenuSubItem : SidebarMenuItem
   const ButtonComponent = isSub ? SidebarMenuSubButton : SidebarMenuButton
 
@@ -21,15 +22,8 @@ export function SidebarFolder({ folder, isSub = false, expandedFolderIds, setExp
       <ButtonComponent
         title={folder.name}
         onClick={() => {
-          setExpandedFolderIds((current) => {
-            const next = new Set(current)
-            if (next.has(folder.id)) {
-              next.delete(folder.id)
-            } else {
-              next.add(folder.id)
-            }
-            return next
-          })
+          const next = isExpanded ? expandedFolderIds.filter((id) => id !== folder.id) : [...expandedFolderIds, folder.id]
+          void set('expandedFolderIds', next)
         }}
       >
         <ChevronRight className={isExpanded ? 'rotate-90 transition-transform' : 'transition-transform'} />
@@ -43,7 +37,7 @@ export function SidebarFolder({ folder, isSub = false, expandedFolderIds, setExp
             <SidebarChat key={chat.id} chat={chat} isSub={true} />
           ))}
           {folder.folders.map((child) => (
-            <SidebarFolder key={child.id} folder={child} isSub={true} expandedFolderIds={expandedFolderIds} setExpandedFolderIds={setExpandedFolderIds} />
+            <SidebarFolder key={child.id} folder={child} isSub={true} />
           ))}
         </SidebarMenuSub>
       )}
