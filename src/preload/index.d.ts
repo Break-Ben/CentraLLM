@@ -12,6 +12,7 @@ declare global {
         getActive: () => Promise<number | null>
         open: (chatId: number) => Promise<void>
         new: (providerId: ChatProviderId) => Promise<void>
+        remove: (chatId: number) => Promise<void>
         setFolder: (chatId: number, folderId: number | null) => Promise<void>
         onChanged: (callback: (chats: ChatRecord[]) => void) => () => void
         onActiveChanged: (callback: (chatId: number | null) => void) => () => void

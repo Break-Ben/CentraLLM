@@ -16,6 +16,7 @@ export class ChatRepository {
   private readonly getChatByLocationQuery: Database.Statement<[string, string], ChatRecord>
   private readonly getMostRecentChatQuery: Database.Statement<[], ChatRecord>
   private readonly upsertChatQuery: Database.Statement<[string, string, string, number], ChatRecord>
+  private readonly removeChatQuery: Database.Statement<[number], void>
   private readonly updateLastOpenedQuery: Database.Statement<[number, number], ChatRecord>
   private readonly setFolderQuery: Database.Statement<[number | null, number], ChatRecord>
 
@@ -56,6 +57,11 @@ export class ChatRepository {
       RETURNING ${SELECT_COLUMNS}
     `)
 
+    this.removeChatQuery = this.db.prepare(`
+      DELETE FROM chats
+      WHERE id = ?
+    `)
+
     this.updateLastOpenedQuery = this.db.prepare(`
       UPDATE chats
       SET last_opened_at = ?
@@ -90,6 +96,10 @@ export class ChatRepository {
   upsertChat(location: ChatLocation, title?: string): ChatRecord {
     const now = Date.now()
     return this.upsertChatQuery.get(location.providerId, location.chatId, title ?? '', now)!
+  }
+
+  removeChat(id: number): void {
+    this.removeChatQuery.run(id)
   }
 
   updateLastOpened(id: number): ChatRecord | undefined {

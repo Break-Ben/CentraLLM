@@ -88,6 +88,11 @@ app.whenReady().then(() => {
   ipcMain.handle('chats:new', async (_event, providerId: ChatProviderId) => {
     await chatController?.openNewChat(providerId)
   })
+  ipcMain.handle('chats:remove', (_event, chatId: number) => {
+    chatController?.closeChatIfActive(chatId)
+    chatRepo?.removeChat(chatId)
+    emitChatsChanged()
+  })
   ipcMain.handle('chats:set-folder', (_event, chatId: number, folderId: number | null) => {
     chatRepo?.setFolder(chatId, folderId)
     emitChatsChanged()

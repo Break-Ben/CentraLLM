@@ -11,6 +11,7 @@ const api = {
     getActive: () => ipcRenderer.invoke('chats:active'),
     open: (chatId: number) => ipcRenderer.invoke('chats:open', chatId),
     new: (providerId: string) => ipcRenderer.invoke('chats:new', providerId),
+    remove: (chatId: number) => ipcRenderer.invoke('chats:remove', chatId),
     setFolder: (chatId: number, folderId: number | null) => ipcRenderer.invoke('chats:set-folder', chatId, folderId),
     onChanged: (callback: (chats: ChatRecord[]) => void) => {
       const listener = (_event: IpcRendererEvent, chats: ChatRecord[]) => callback(chats)

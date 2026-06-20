@@ -103,6 +103,21 @@ export class ChatController {
     await this.view.webContents.loadURL(getNewChatUrl(providerId)).catch(() => undefined)
   }
 
+  closeChatIfActive(chatId: number): void {
+    if (!this.currentLocation || this.activeId !== chatId) {
+      return
+    }
+    const providerId = this.currentLocation.providerId
+
+    this.activeId = null
+    this.currentLocation = null
+    this.clearTitleProtection()
+    this.updateAppTitle()
+    this.emitActiveChatChanged(null)
+
+    void this.view.webContents.loadURL(getNewChatUrl(providerId)).catch(() => undefined)
+  }
+
   destroy(): void {
     this.clearTitleProtection()
     if (this.syncTimeout) {
