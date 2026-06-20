@@ -101,9 +101,9 @@ function AppSidebarContextMenu(): React.JSX.Element {
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
   const handleNewFolder = async (): Promise<void> => {
-    const folder = await window.api.folders.create(null)
-    if (folder) {
-      startFolderRename(folder.id)
+    const newFolder = await window.api.folders.create()
+    if (newFolder) {
+      startFolderRename(newFolder.id)
     }
   }
 

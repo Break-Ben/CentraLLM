@@ -77,9 +77,18 @@ interface SidebarFolderContextMenuProps {
 }
 
 function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenuProps): React.JSX.Element {
+  const { startFolderRename } = useUiStore((state) => state.actions)
+
+  const handleNewFolder = async (): Promise<void> => {
+    const newFolder = await window.api.folders.create(null, folder.id)
+    if (newFolder) {
+      startFolderRename(newFolder.id)
+    }
+  }
+
   return (
     <ContextMenuContent>
-      <ContextMenuItem onClick={() => console.log('New folder clicked', folder.id)}>
+      <ContextMenuItem onClick={handleNewFolder}>
         <FolderPlus />
         <span>New folder</span>
       </ContextMenuItem>
