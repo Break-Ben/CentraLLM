@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { ChevronRight, Folder, FolderPlus, MessageSquarePlus, Pencil, Trash2 } from 'lucide-react'
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
+import { InlineEdit } from '@/components/ui/inline-edit'
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { FolderNode } from '@shared/folder'
 import { useAppStateStore } from '@/stores/app-state-store'
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from '@/components/ui/context-menu'
 
 interface SidebarFolderProps {
   folder: FolderNode
@@ -13,6 +15,8 @@ interface SidebarFolderProps {
 export function SidebarFolder({ folder, isSub = false }: SidebarFolderProps): React.JSX.Element {
   const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
   const { set } = useAppStateStore((state) => state.actions)
+
+  const [isEditing, setIsEditing] = useState(false)
 
   const isExpanded = expandedFolderIds.includes(folder.id)
   const ItemComponent = isSub ? SidebarMenuSubItem : SidebarMenuItem
@@ -25,16 +29,30 @@ export function SidebarFolder({ folder, isSub = false }: SidebarFolderProps): Re
           <ButtonComponent
             title={folder.name}
             onClick={() => {
+              if (isEditing) {
+                return
+              }
               const next = isExpanded ? expandedFolderIds.filter((id) => id !== folder.id) : [...expandedFolderIds, folder.id]
               void set('expandedFolderIds', next)
             }}
           >
             <ChevronRight className={isExpanded ? 'rotate-90 transition-transform' : 'transition-transform'} />
             <Folder />
-            <span>{folder.name}</span>
+            {isEditing ? (
+              <InlineEdit
+                initialValue={folder.name}
+                onSave={async (next) => {
+                  await window.api.folders.rename(folder.id, next)
+                }}
+                onClose={() => setIsEditing(false)}
+                aria-label={`Rename folder ${folder.name}`}
+              />
+            ) : (
+              <span>{folder.name}</span>
+            )}
           </ButtonComponent>
         </ContextMenuTrigger>
-        <SidebarFolderContextMenu folder={folder} />
+        <SidebarFolderContextMenu folder={folder} onRename={() => setIsEditing(true)} />
       </ContextMenu>
 
       {isExpanded && (folder.chats.length > 0 || folder.folders.length > 0) && (
@@ -53,9 +71,10 @@ export function SidebarFolder({ folder, isSub = false }: SidebarFolderProps): Re
 
 interface SidebarFolderContextMenuProps {
   folder: FolderNode
+  onRename: () => void
 }
 
-function SidebarFolderContextMenu({ folder }: SidebarFolderContextMenuProps): React.JSX.Element {
+function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenuProps): React.JSX.Element {
   return (
     <ContextMenuContent>
       <ContextMenuItem onClick={() => console.log('New folder clicked', folder.id)}>
@@ -69,13 +88,13 @@ function SidebarFolderContextMenu({ folder }: SidebarFolderContextMenuProps): Re
 
       <ContextMenuSeparator />
 
-      <ContextMenuItem onClick={() => console.log('Rename clicked', folder.id)}>
+      <ContextMenuItem onClick={onRename}>
         <Pencil />
         <span>Rename</span>
       </ContextMenuItem>
-      <ContextMenuItem className="text-destructive focus:text-destructive" onClick={() => console.log('Remove folder clicked', folder.id)}>
+      <ContextMenuItem className="text-destructive focus:text-destructive" onClick={() => void window.api.folders.delete(folder.id)}>
         <Trash2 />
-        <span>Remove folder</span>
+        <span>Remove</span>
       </ContextMenuItem>
     </ContextMenuContent>
   )

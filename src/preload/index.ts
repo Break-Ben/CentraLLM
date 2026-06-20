@@ -28,6 +28,7 @@ const api = {
     list: () => ipcRenderer.invoke('folders:list'),
     create: (name: string, parentFolderId?: number | null) => ipcRenderer.invoke('folders:create', name, parentFolderId ?? null),
     delete: (folderId: number) => ipcRenderer.invoke('folders:delete', folderId),
+    rename: (folderId: number, name: string) => ipcRenderer.invoke('folders:rename', folderId, name),
     onChanged: (callback: (folders: FolderRecord[]) => void) => {
       const listener = (_event: IpcRendererEvent, folders: FolderRecord[]) => callback(folders)
       ipcRenderer.on('folders:changed', listener)

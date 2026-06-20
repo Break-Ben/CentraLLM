@@ -12,6 +12,7 @@ export class FolderRepository {
   private readonly getFolderByIdQuery: Database.Statement<[number], FolderRecord>
   private readonly createFolderQuery: Database.Statement<[string, number | null], FolderRecord>
   private readonly deleteFolderQuery: Database.Statement<[number], void>
+  private readonly renameFolderQuery: Database.Statement<[string, number], FolderRecord>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -38,6 +39,13 @@ export class FolderRepository {
       DELETE FROM folders
       WHERE id = ?
     `)
+
+    this.renameFolderQuery = this.db.prepare(`
+      UPDATE folders
+      SET name = ?
+      WHERE id = ?
+      RETURNING ${SELECT_COLUMNS}
+    `)
   }
 
   listFolders(): FolderRecord[] {
@@ -63,6 +71,15 @@ export class FolderRepository {
 
   deleteFolder(folderId: number): void {
     this.deleteFolderQuery.run(folderId)
+  }
+
+  renameFolder(folderId: number, name: string): FolderRecord {
+    const trimmed = name.trim()
+    if (!trimmed) {
+      throw new Error('Folder name cannot be empty')
+    }
+
+    return this.renameFolderQuery.get(trimmed, folderId)!
   }
 
   private ensureSchema(): void {

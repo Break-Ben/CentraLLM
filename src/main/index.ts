@@ -110,6 +110,11 @@ app.whenReady().then(() => {
     emitChatsChanged()
     emitFoldersChanged()
   })
+  ipcMain.handle('folders:rename', (_event, folderId: number, name: string) => {
+    const folder = folderRepo?.renameFolder(folderId, name) ?? null
+    emitFoldersChanged()
+    return folder
+  })
 
   // App State
   ipcMain.handle('appState:getAll', () => appStateRepo?.getAll() ?? {})
