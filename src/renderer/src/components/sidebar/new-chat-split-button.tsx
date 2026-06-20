@@ -18,15 +18,15 @@ export function NewChatSplitButton(): React.JSX.Element {
   const { newChat } = useChatStore((state) => state.actions)
   const { setPage } = useNavigationStore((state) => state.actions)
 
-  const provider = getChatProvider(lastUsedProviderId)
+  const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
   if (isCompact) {
     return (
       <Button
         variant="outline"
         className="w-full justify-start px-1.75"
-        aria-label={`New ${provider.name} chat`}
-        title={`New ${provider.name} chat`}
+        aria-label={`New ${lastUsedProvider.name} chat`}
+        title={`New ${lastUsedProvider.name} chat`}
         onClick={() => {
           setPage({ type: 'chat', id: null })
           void newChat(lastUsedProviderId)
@@ -42,8 +42,8 @@ export function NewChatSplitButton(): React.JSX.Element {
       <Button
         variant="outline"
         className="flex-1 justify-start gap-2 px-1.75"
-        aria-label={`New ${provider.name} chat`}
-        title={`New ${provider.name} chat`}
+        aria-label={`New ${lastUsedProvider.name} chat`}
+        title={`New ${lastUsedProvider.name} chat`}
         onClick={() => {
           setPage({ type: 'chat', id: null })
           void newChat(lastUsedProviderId)
@@ -64,17 +64,19 @@ export function NewChatSplitButton(): React.JSX.Element {
         />
         <DropdownMenuContent align="end">
           <DropdownMenuGroup>
-            {CHAT_PROVIDER_LIST.map((item) => (
+            {CHAT_PROVIDER_LIST.map((provider) => (
               <DropdownMenuItem
-                key={item.id}
+                key={provider.id}
+                aria-label={`New ${provider.name} chat`}
+                title={`New ${provider.name} chat`}
                 onClick={() => {
                   setPage({ type: 'chat', id: null })
-                  void set('lastUsedProviderId', item.id)
-                  void newChat(item.id)
+                  void set('lastUsedProviderId', provider.id)
+                  void newChat(provider.id)
                 }}
               >
-                <ChatProviderIcon providerId={item.id} />
-                <span>{item.name}</span>
+                <ChatProviderIcon providerId={provider.id} />
+                <span>{provider.name}</span>
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>

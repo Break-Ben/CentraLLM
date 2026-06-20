@@ -8,9 +8,10 @@ import { useAppStateStore } from '@/stores/app-state-store'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
 import { SidebarFolder } from '@/components/sidebar/sidebar-folder'
 import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
-import { ChatRecord } from '@shared/chat'
+import { CHAT_PROVIDER_LIST, ChatProviderId, ChatRecord, getChatProvider } from '@shared/chat'
 import { FolderNode, FolderRecord } from '@shared/folder'
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { ChatProviderIcon } from '@/components/chat-provider-icon'
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
@@ -90,15 +91,47 @@ export function AppSidebar(): React.JSX.Element {
 }
 
 function AppSidebarContextMenu(): React.JSX.Element {
+  const lastUsedProviderId = useAppStateStore((state) => state.lastUsedProviderId)
+  const { set } = useAppStateStore((state) => state.actions)
+  const { newChat } = useChatStore((state) => state.actions)
+  const { setPage } = useNavigationStore((state) => state.actions)
+
+  const lastUsedProvider = getChatProvider(lastUsedProviderId)
+
+  const createChat = (providerId: ChatProviderId) => {
+    setPage({ type: 'chat', id: null })
+    void set('lastUsedProviderId', providerId)
+    void newChat(providerId)
+  }
+
   return (
     <ContextMenuContent>
+      <ContextMenuSub>
+        <ContextMenuSubTrigger>
+          <MessageSquarePlus />
+          <span>New chat</span>
+        </ContextMenuSubTrigger>
+
+        <ContextMenuSubContent>
+          <ContextMenuItem aria-label={`New ${lastUsedProvider.name} chat`} title={`New ${lastUsedProvider.name} chat`} onClick={() => createChat(lastUsedProvider.id)}>
+            <ChatProviderIcon providerId={lastUsedProvider.id} />
+            <span>{lastUsedProvider.name}</span>
+          </ContextMenuItem>
+
+          <ContextMenuSeparator />
+
+          {CHAT_PROVIDER_LIST.map((provider) => (
+            <ContextMenuItem aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} key={provider.id} onClick={() => createChat(provider.id)}>
+              <ChatProviderIcon providerId={provider.id} />
+              <span>{provider.name}</span>
+            </ContextMenuItem>
+          ))}
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+
       <ContextMenuItem onClick={() => console.log('New folder clicked')}>
         <FolderPlus />
         <span>New folder</span>
-      </ContextMenuItem>
-      <ContextMenuItem onClick={() => console.log('New chat clicked')}>
-        <MessageSquarePlus />
-        <span>New chat</span>
       </ContextMenuItem>
     </ContextMenuContent>
   )
