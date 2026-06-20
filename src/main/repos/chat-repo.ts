@@ -108,7 +108,7 @@ export class ChatRepository {
         chat_id TEXT NOT NULL,
         title TEXT NOT NULL DEFAULT '',
         last_opened_at INTEGER NOT NULL,
-        folder_id INTEGER REFERENCES folders(id) ON DELETE SET NULL,
+        folder_id INTEGER REFERENCES folders(id) ON DELETE CASCADE,
         UNIQUE(provider_id, chat_id)
       );
 
