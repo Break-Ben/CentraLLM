@@ -1,6 +1,8 @@
 import Database from 'better-sqlite3'
 import { FolderRecord } from '@shared/folder'
 
+const DEFAULT_FOLDER_NAME = 'New Folder'
+
 const SELECT_COLUMNS = `
   id,
   name,
@@ -13,6 +15,7 @@ export class FolderRepository {
   private readonly createFolderQuery: Database.Statement<[string, number | null], FolderRecord>
   private readonly deleteFolderQuery: Database.Statement<[number], void>
   private readonly renameFolderQuery: Database.Statement<[string, number], FolderRecord>
+  private readonly listFolderNamesQuery: Database.Statement<[number | null], { name: string }>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -46,6 +49,12 @@ export class FolderRepository {
       WHERE id = ?
       RETURNING ${SELECT_COLUMNS}
     `)
+
+    this.listFolderNamesQuery = this.db.prepare(`
+      SELECT name
+      FROM folders
+      WHERE COALESCE(parent_folder_id, 0) = COALESCE(?, 0)
+    `)
   }
 
   listFolders(): FolderRecord[] {
@@ -56,17 +65,14 @@ export class FolderRepository {
     return this.getFolderByIdQuery.get(folderId)
   }
 
-  createFolder(name: string, parentFolderId: number | null = null): FolderRecord {
-    const trimmed = name.trim()
-    if (!trimmed) {
-      throw new Error('Folder name cannot be empty')
-    }
-
+  createFolder(name: string | null = null, parentFolderId: number | null = null): FolderRecord {
     if (parentFolderId !== null && !this.getFolderById(parentFolderId)) {
       throw new Error('Parent folder does not exist')
     }
 
-    return this.createFolderQuery.get(trimmed, parentFolderId)!
+    const trimmed = name?.trim()
+    const folderName = trimmed ? trimmed : this.getNextDefaultFolderName(parentFolderId)
+    return this.createFolderQuery.get(folderName, parentFolderId)!
   }
 
   deleteFolder(folderId: number): void {
@@ -80,6 +86,25 @@ export class FolderRepository {
     }
 
     return this.renameFolderQuery.get(trimmed, folderId)!
+  }
+
+  private getNextDefaultFolderName(parentFolderId: number | null): string {
+    const names = this.listFolderNamesQuery.all(parentFolderId).map((row) => row.name)
+    let maxSuffix = 0
+
+    for (const name of names) {
+      if (name === DEFAULT_FOLDER_NAME) {
+        maxSuffix = Math.max(maxSuffix, 1)
+        continue
+      }
+
+      const match = /^New Folder (\d+)$/i.exec(name)
+      if (match) {
+        maxSuffix = Math.max(maxSuffix, Number(match[1]))
+      }
+    }
+
+    return maxSuffix === 0 ? DEFAULT_FOLDER_NAME : `${DEFAULT_FOLDER_NAME} ${maxSuffix + 1}`
   }
 
   private ensureSchema(): void {

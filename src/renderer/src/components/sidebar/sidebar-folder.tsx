@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { ChevronRight, Folder, FolderPlus, MessageSquarePlus, Pencil, Trash2 } from 'lucide-react'
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
@@ -6,6 +5,7 @@ import { InlineEdit } from '@/components/ui/inline-edit'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { FolderNode } from '@shared/folder'
 import { useAppStateStore } from '@/stores/app-state-store'
+import { useUiStore } from '@/stores/ui-store'
 
 interface SidebarFolderProps {
   folder: FolderNode
@@ -16,8 +16,10 @@ export function SidebarFolder({ folder, isSub = false }: SidebarFolderProps): Re
   const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
   const { set } = useAppStateStore((state) => state.actions)
 
-  const [isEditing, setIsEditing] = useState(false)
+  const editingFolderId = useUiStore((state) => state.editingFolderId)
+  const { startFolderRename, stopFolderRename } = useUiStore((state) => state.actions)
 
+  const isEditing = editingFolderId === folder.id
   const isExpanded = expandedFolderIds.includes(folder.id)
   const ItemComponent = isSub ? SidebarMenuSubItem : SidebarMenuItem
   const ButtonComponent = isSub ? SidebarMenuSubButton : SidebarMenuButton
@@ -44,7 +46,7 @@ export function SidebarFolder({ folder, isSub = false }: SidebarFolderProps): Re
                 onSave={async (next) => {
                   await window.api.folders.rename(folder.id, next)
                 }}
-                onClose={() => setIsEditing(false)}
+                onClose={stopFolderRename}
                 aria-label={`Rename folder ${folder.name}`}
               />
             ) : (
@@ -52,7 +54,7 @@ export function SidebarFolder({ folder, isSub = false }: SidebarFolderProps): Re
             )}
           </ButtonComponent>
         </ContextMenuTrigger>
-        <SidebarFolderContextMenu folder={folder} onRename={() => setIsEditing(true)} />
+        <SidebarFolderContextMenu folder={folder} onRename={() => startFolderRename(folder.id)} />
       </ContextMenu>
 
       {isExpanded && (folder.chats.length > 0 || folder.folders.length > 0) && (

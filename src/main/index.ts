@@ -100,8 +100,8 @@ app.whenReady().then(() => {
 
   // Folders
   ipcMain.handle('folders:list', () => folderRepo?.listFolders() ?? [])
-  ipcMain.handle('folders:create', (_event, name: string, parentFolderId: number | null) => {
-    const folder = folderRepo?.createFolder(name, parentFolderId ?? null) ?? null
+  ipcMain.handle('folders:create', (_event, name: string | null, parentFolderId: number | null) => {
+    const folder = folderRepo?.createFolder(name ?? null, parentFolderId ?? null) ?? null
     emitFoldersChanged()
     return folder
   })

@@ -5,13 +5,14 @@ import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useFolderStore } from '@/stores/folder-store'
 import { useAppStateStore } from '@/stores/app-state-store'
+import { useUiStore } from '@/stores/ui-store'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
 import { SidebarFolder } from '@/components/sidebar/sidebar-folder'
 import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
-import { CHAT_PROVIDER_LIST, ChatProviderId, ChatRecord, getChatProvider } from '@shared/chat'
-import { FolderNode, FolderRecord } from '@shared/folder'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { CHAT_PROVIDER_LIST, ChatProviderId, ChatRecord, getChatProvider } from '@shared/chat'
+import { FolderNode, FolderRecord } from '@shared/folder'
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
@@ -95,8 +96,16 @@ function AppSidebarContextMenu(): React.JSX.Element {
   const { set } = useAppStateStore((state) => state.actions)
   const { newChat } = useChatStore((state) => state.actions)
   const { setPage } = useNavigationStore((state) => state.actions)
+  const { startFolderRename } = useUiStore((state) => state.actions)
 
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
+
+  const handleNewFolder = async (): Promise<void> => {
+    const folder = await window.api.folders.create(null)
+    if (folder) {
+      startFolderRename(folder.id)
+    }
+  }
 
   const createChat = (providerId: ChatProviderId) => {
     setPage({ type: 'chat', id: null })
@@ -129,7 +138,7 @@ function AppSidebarContextMenu(): React.JSX.Element {
         </ContextMenuSubContent>
       </ContextMenuSub>
 
-      <ContextMenuItem onClick={() => console.log('New folder clicked')}>
+      <ContextMenuItem onClick={handleNewFolder}>
         <FolderPlus />
         <span>New folder</span>
       </ContextMenuItem>

@@ -19,7 +19,7 @@ declare global {
       }
       folders: {
         list: () => Promise<FolderRecord[]>
-        create: (name: string, parentFolderId?: number | null) => Promise<FolderRecord | null>
+        create: (name?: string | null, parentFolderId?: number | null) => Promise<FolderRecord | null>
         delete: (folderId: number) => Promise<void>
         rename: (folderId: number, name: string) => Promise<FolderRecord | null>
         onChanged: (callback: (folders: FolderRecord[]) => void) => () => void
