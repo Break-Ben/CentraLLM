@@ -8,8 +8,11 @@ const TITLE_PROTECTION_DELAY_MS = 5000
 
 export class ChatController {
   private readonly view: WebContentsView
+
   private activeId: number | null = null
   private currentLocation: ChatLocation | null = null
+  private pendingNewChatFolderId: number | null = null
+
   private syncTimeout: NodeJS.Timeout | null = null
   private protectionTimeout: NodeJS.Timeout | null = null
 
@@ -57,6 +60,7 @@ export class ChatController {
   async start(): Promise<void> {
     this.activeId = null
     this.currentLocation = null
+    this.pendingNewChatFolderId = null
     this.view.setVisible(false)
   }
 
@@ -69,6 +73,8 @@ export class ChatController {
   }
 
   async openChat(chatId: number): Promise<void> {
+    this.pendingNewChatFolderId = null
+
     const chat = this.repository.getChatById(chatId)
     if (!chat) {
       return
@@ -91,9 +97,10 @@ export class ChatController {
     await this.view.webContents.loadURL(getChatUrl(this.currentLocation)).catch(() => undefined)
   }
 
-  async openNewChat(providerId: ChatProviderId): Promise<void> {
+  async openNewChat(providerId: ChatProviderId, folderId: number | null = null): Promise<void> {
     this.activeId = null
     this.currentLocation = null
+    this.pendingNewChatFolderId = folderId
     this.clearTitleProtection()
 
     this.view.setVisible(true)
@@ -111,6 +118,7 @@ export class ChatController {
 
     this.activeId = null
     this.currentLocation = null
+    this.pendingNewChatFolderId = null
     this.clearTitleProtection()
     this.updateAppTitle()
     this.emitActiveChatChanged(null)
@@ -120,6 +128,7 @@ export class ChatController {
 
   destroy(): void {
     this.clearTitleProtection()
+    this.pendingNewChatFolderId = null
     if (this.syncTimeout) {
       clearTimeout(this.syncTimeout)
     }
@@ -147,6 +156,9 @@ export class ChatController {
     this.currentLocation = location
 
     const existingChat = this.repository.getChatByLocation(this.currentLocation)
+    if (existingChat) {
+      this.pendingNewChatFolderId = null
+    }
 
     if (existingChat && existingChat.id !== this.activeId) {
       this.activeId = existingChat.id
@@ -169,7 +181,11 @@ export class ChatController {
       return
     }
 
-    const chat = this.repository.upsertChat(location, chatTitle)
+    const folderId = this.pendingNewChatFolderId
+    const chat = this.repository.upsertChat(location, chatTitle, folderId)
+    if (folderId !== null) {
+      this.pendingNewChatFolderId = null
+    }
 
     if (this.activeId !== chat.id) {
       this.activeId = chat.id

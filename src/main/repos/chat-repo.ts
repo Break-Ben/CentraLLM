@@ -15,7 +15,7 @@ export class ChatRepository {
   private readonly getChatByIdQuery: Database.Statement<[number], ChatRecord>
   private readonly getChatByLocationQuery: Database.Statement<[string, string], ChatRecord>
   private readonly getMostRecentChatQuery: Database.Statement<[], ChatRecord>
-  private readonly upsertChatQuery: Database.Statement<[string, string, string, number], ChatRecord>
+  private readonly upsertChatQuery: Database.Statement<[string, string, string, number, number | null], ChatRecord>
   private readonly removeChatQuery: Database.Statement<[number], void>
   private readonly updateLastOpenedQuery: Database.Statement<[number, number], ChatRecord>
   private readonly setFolderQuery: Database.Statement<[number | null, number], ChatRecord>
@@ -49,8 +49,8 @@ export class ChatRepository {
     `)
 
     this.upsertChatQuery = this.db.prepare(`
-      INSERT INTO chats (provider_id, chat_id, title, last_opened_at)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO chats (provider_id, chat_id, title, last_opened_at, folder_id)
+      VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(provider_id, chat_id) DO UPDATE SET
         title = CASE WHEN excluded.title <> '' THEN excluded.title ELSE chats.title END,
         last_opened_at = excluded.last_opened_at
@@ -93,9 +93,9 @@ export class ChatRepository {
     return this.getMostRecentChatQuery.get()
   }
 
-  upsertChat(location: ChatLocation, title?: string): ChatRecord {
+  upsertChat(location: ChatLocation, title?: string, folderId: number | null = null): ChatRecord {
     const now = Date.now()
-    return this.upsertChatQuery.get(location.providerId, location.chatId, title ?? '', now)!
+    return this.upsertChatQuery.get(location.providerId, location.chatId, title ?? '', now, folderId)!
   }
 
   removeChat(id: number): void {

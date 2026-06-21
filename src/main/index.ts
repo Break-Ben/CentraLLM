@@ -85,8 +85,8 @@ app.whenReady().then(() => {
   ipcMain.handle('chats:open', async (_event, chatId: number) => {
     await chatController?.openChat(chatId)
   })
-  ipcMain.handle('chats:new', async (_event, providerId: ChatProviderId) => {
-    await chatController?.openNewChat(providerId)
+  ipcMain.handle('chats:new', async (_event, providerId: ChatProviderId, folderId: number | null = null) => {
+    await chatController?.openNewChat(providerId, folderId)
   })
   ipcMain.handle('chats:remove', (_event, chatId: number) => {
     chatController?.closeChatIfActive(chatId)

@@ -49,9 +49,9 @@ interface SidebarChatContextMenuProps {
 function SidebarChatContextMenu({ chat }: SidebarChatContextMenuProps): React.JSX.Element {
   return (
     <ContextMenuContent>
-      <ContextMenuItem className="text-destructive focus:text-destructive" onClick={() => void window.api.chats.remove(chat.id)}>
+      <ContextMenuItem variant="destructive" onClick={() => void window.api.chats.remove(chat.id)}>
         <Trash2 />
-        <span>Remove chat</span>
+        <span>Remove</span>
       </ContextMenuItem>
     </ContextMenuContent>
   )

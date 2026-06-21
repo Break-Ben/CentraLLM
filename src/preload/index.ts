@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
-import { ChatRecord } from '@shared/chat'
+import { ChatProviderId, ChatRecord } from '@shared/chat'
 import { FolderRecord } from '@shared/folder'
 import { ViewBounds } from '@shared/layout'
 import { AppState } from '@shared/app-state'
@@ -10,7 +10,7 @@ const api = {
     list: () => ipcRenderer.invoke('chats:list'),
     getActive: () => ipcRenderer.invoke('chats:active'),
     open: (chatId: number) => ipcRenderer.invoke('chats:open', chatId),
-    new: (providerId: string) => ipcRenderer.invoke('chats:new', providerId),
+    new: (providerId: ChatProviderId, folderId: number | null) => ipcRenderer.invoke('chats:new', providerId, folderId),
     remove: (chatId: number) => ipcRenderer.invoke('chats:remove', chatId),
     setFolder: (chatId: number, folderId: number | null) => ipcRenderer.invoke('chats:set-folder', chatId, folderId),
     onChanged: (callback: (chats: ChatRecord[]) => void) => {

@@ -8,7 +8,7 @@ type ChatStore = {
     init: () => () => void
     setChats: (chats: ChatRecord[]) => void
     openChat: (chatId: number) => Promise<void>
-    newChat: (providerId: ChatProviderId) => Promise<void>
+    newChat: (providerId: ChatProviderId, folderId: number | null) => Promise<void>
   }
 }
 
@@ -45,8 +45,8 @@ export const useChatStore = create<ChatStore>((set) => ({
     openChat: async (chatId) => {
       await window.api.chats.open(chatId)
     },
-    newChat: async (providerId: ChatProviderId) => {
-      await window.api.chats.new(providerId)
+    newChat: async (providerId: ChatProviderId, folderId: number | null = null) => {
+      await window.api.chats.new(providerId, folderId)
     }
   }
 }))

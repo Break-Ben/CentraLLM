@@ -2,10 +2,14 @@ import { ChevronRight, Folder, FolderPlus, MessageSquarePlus, Pencil, Trash2 } f
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
 import { InlineEdit } from '@/components/ui/inline-edit'
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { FolderNode } from '@shared/folder'
 import { useAppStateStore } from '@/stores/app-state-store'
 import { useUiStore } from '@/stores/ui-store'
+import { useChatStore } from '@/stores/chat-store'
+import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { useNavigationStore } from '@/stores/navigation-store'
+import { getChatProvider, ChatProviderId, CHAT_PROVIDER_LIST } from '@shared/chat'
 
 interface SidebarFolderProps {
   folder: FolderNode
@@ -77,7 +81,19 @@ interface SidebarFolderContextMenuProps {
 }
 
 function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenuProps): React.JSX.Element {
+  const lastUsedProviderId = useAppStateStore((state) => state.lastUsedProviderId)
+  const { set } = useAppStateStore((state) => state.actions)
+  const { newChat } = useChatStore((state) => state.actions)
+  const { setPage } = useNavigationStore((state) => state.actions)
   const { startFolderRename } = useUiStore((state) => state.actions)
+
+  const lastUsedProvider = getChatProvider(lastUsedProviderId)
+
+  const createChat = (providerId: ChatProviderId) => {
+    setPage({ type: 'chat', id: null })
+    void set('lastUsedProviderId', providerId)
+    void newChat(providerId, folder.id)
+  }
 
   const handleNewFolder = async (): Promise<void> => {
     const newFolder = await window.api.folders.create(null, folder.id)
@@ -88,13 +104,31 @@ function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenu
 
   return (
     <ContextMenuContent>
+      <ContextMenuSub>
+        <ContextMenuSubTrigger>
+          <MessageSquarePlus />
+          <span>New chat</span>
+        </ContextMenuSubTrigger>
+
+        <ContextMenuSubContent>
+          <ContextMenuItem aria-label={`New ${lastUsedProvider.name} chat`} title={`New ${lastUsedProvider.name} chat`} onClick={() => createChat(lastUsedProvider.id)}>
+            <ChatProviderIcon providerId={lastUsedProvider.id} />
+            <span>{lastUsedProvider.name}</span>
+          </ContextMenuItem>
+
+          <ContextMenuSeparator />
+
+          {CHAT_PROVIDER_LIST.map((provider) => (
+            <ContextMenuItem key={provider.id} aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} onClick={() => createChat(provider.id)}>
+              <ChatProviderIcon providerId={provider.id} />
+              <span>{provider.name}</span>
+            </ContextMenuItem>
+          ))}
+        </ContextMenuSubContent>
+      </ContextMenuSub>
       <ContextMenuItem onClick={handleNewFolder}>
         <FolderPlus />
         <span>New folder</span>
-      </ContextMenuItem>
-      <ContextMenuItem onClick={() => console.log('New chat clicked', folder.id)}>
-        <MessageSquarePlus />
-        <span>New chat</span>
       </ContextMenuItem>
 
       <ContextMenuSeparator />
@@ -103,7 +137,7 @@ function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenu
         <Pencil />
         <span>Rename</span>
       </ContextMenuItem>
-      <ContextMenuItem className="text-destructive focus:text-destructive" onClick={() => void window.api.folders.delete(folder.id)}>
+      <ContextMenuItem variant="destructive" onClick={() => void window.api.folders.delete(folder.id)}>
         <Trash2 />
         <span>Remove</span>
       </ContextMenuItem>
