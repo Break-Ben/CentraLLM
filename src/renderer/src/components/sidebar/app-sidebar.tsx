@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '@/components/ui/sidebar'
-import { FolderPlus, House, MessageSquarePlus, Settings } from 'lucide-react'
+import { FolderPlus, House, MessageSquarePlus, MessagesSquare, Settings } from 'lucide-react'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useFolderStore } from '@/stores/folder-store'
@@ -45,6 +45,13 @@ export function AppSidebar(): React.JSX.Element {
             <SidebarMenuButton isActive={page.type === 'home'} onClick={() => setPage({ type: 'home' })}>
               <House />
               <span>Home</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={page.type === 'chat-list'} onClick={() => setPage({ type: 'chat-list', folderId: null })}>
+              <MessagesSquare />
+              <span>Chats</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
 

@@ -1,12 +1,8 @@
 # CentraLLM
 
-Your all-in-one all for web-based LLMs.
+The centralised native workspace for all your web-based LLMs.
 
-## Recommended IDE Setup
-
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-
-## Project Setup
+## Setup
 
 ### Install
 

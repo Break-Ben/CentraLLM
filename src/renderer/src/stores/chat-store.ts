@@ -8,7 +8,7 @@ type ChatStore = {
     init: () => () => void
     setChats: (chats: ChatRecord[]) => void
     openChat: (chatId: number) => Promise<void>
-    newChat: (providerId: ChatProviderId, folderId: number | null) => Promise<void>
+    newChat: (providerId: ChatProviderId, folderId?: number | null) => Promise<void>
   }
 }
 
