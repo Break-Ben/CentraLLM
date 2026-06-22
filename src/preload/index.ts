@@ -4,8 +4,24 @@ import { FolderRecord } from '@shared/folder'
 import { ViewBounds } from '@shared/layout'
 import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
+import { Page } from '@shared/navigation'
 
 const api = {
+  navigation: {
+    pageChanged: (page: Page) => ipcRenderer.send('navigation:page-changed', page)
+  },
+  layout: {
+    setWebviewBounds: (bounds: ViewBounds) => ipcRenderer.send('view:set-bounds', bounds),
+    setWebviewVisible: (visible: boolean) => ipcRenderer.send('view:set-visible', visible)
+  },
+  appState: {
+    getAll: (): Promise<AppState> => ipcRenderer.invoke('appState:get-all'),
+    set: <K extends keyof AppState>(key: K, value: AppState[K]): Promise<void> => ipcRenderer.invoke('appState:set', key, value)
+  },
+  preferences: {
+    getAll: (): Promise<Preferences> => ipcRenderer.invoke('preferences:get-all'),
+    set: <K extends keyof Preferences>(key: K, value: Preferences[K]): Promise<void> => ipcRenderer.invoke('preferences:set', key, value)
+  },
   chats: {
     list: () => ipcRenderer.invoke('chats:list'),
     getActive: () => ipcRenderer.invoke('chats:active'),
@@ -34,18 +50,6 @@ const api = {
       ipcRenderer.on('folders:changed', listener)
       return () => ipcRenderer.removeListener('folders:changed', listener)
     }
-  },
-  layout: {
-    setWebviewBounds: (bounds: ViewBounds) => ipcRenderer.send('view:set-bounds', bounds),
-    setWebviewVisible: (visible: boolean) => ipcRenderer.send('view:set-visible', visible)
-  },
-  appState: {
-    getAll: (): Promise<AppState> => ipcRenderer.invoke('appState:getAll'),
-    set: <K extends keyof AppState>(key: K, value: AppState[K]): Promise<void> => ipcRenderer.invoke('appState:set', key, value)
-  },
-  preferences: {
-    getAll: (): Promise<Preferences> => ipcRenderer.invoke('preferences:getAll'),
-    set: <K extends keyof Preferences>(key: K, value: Preferences[K]): Promise<void> => ipcRenderer.invoke('preferences:set', key, value)
   }
 }
 

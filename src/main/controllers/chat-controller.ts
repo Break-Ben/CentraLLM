@@ -2,6 +2,7 @@ import { BrowserWindow, shell, WebContentsView } from 'electron'
 import { getChatUrl, getNewChatUrl, extractChatLocation, ChatLocation, ChatProviderId, cleanChatTitle, ChatRecord } from '@shared/chat'
 import { ChatRepository } from '@main/repos/chat-repo'
 import { ViewBounds } from '@shared/layout'
+import { NavigationController } from '@main/controllers/navigation-controller'
 
 const SYNC_TIMEOUT_MS = 50
 const TITLE_PROTECTION_DELAY_MS = 5000
@@ -18,7 +19,8 @@ export class ChatController {
 
   constructor(
     private readonly window: BrowserWindow,
-    private readonly repository: ChatRepository
+    private readonly repository: ChatRepository,
+    private readonly navigation: NavigationController
   ) {
     this.view = new WebContentsView({
       webPreferences: {
@@ -214,7 +216,7 @@ export class ChatController {
   }
 
   private updateAppTitle(chat?: ChatRecord): void {
-    this.window.setTitle(chat?.title ? `${chat.title} - CentraLLM` : 'CentraLLM')
+    this.navigation.setChatTitle(chat?.title ?? null)
   }
 
   private emitChatsChanged(): void {

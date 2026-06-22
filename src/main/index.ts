@@ -11,8 +11,11 @@ import { PreferencesRepository } from '@main/repos/preferences-repo'
 import { ChatProviderId } from '@shared/chat'
 import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
+import { Page } from '@shared/navigation'
+import { NavigationController } from '@main/controllers/navigation-controller'
 
 let mainWindow: BrowserWindow | null = null
+let navigationController: NavigationController | null = null
 let chatController: ChatController | null = null
 
 let db: Database.Database | null = null
@@ -22,8 +25,8 @@ let appStateRepo: AppStateRepository | null = null
 let preferencesRepo: PreferencesRepository | null = null
 
 function createWindow(): void {
-  if (!chatRepo) {
-    throw new Error('Chat repository is not initialised')
+  if (!chatRepo || !folderRepo) {
+    throw new Error('Chat/folder repository is not initialised')
   }
 
   mainWindow = new BrowserWindow({
@@ -39,7 +42,8 @@ function createWindow(): void {
     }
   })
 
-  chatController = new ChatController(mainWindow, chatRepo)
+  navigationController = new NavigationController(mainWindow, folderRepo)
+  chatController = new ChatController(mainWindow, chatRepo, navigationController)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
@@ -79,6 +83,27 @@ app.whenReady().then(() => {
   appStateRepo = new AppStateRepository(db)
   preferencesRepo = new PreferencesRepository(db)
 
+  // Navigation
+  ipcMain.on('navigation:page-changed', (_event, page: Page) => {
+    navigationController?.setPage(page)
+  })
+
+  // Layout
+  ipcMain.on('view:set-bounds', (_event, bounds) => {
+    chatController?.setBounds(bounds)
+  })
+  ipcMain.on('view:set-visible', (_event, visible: boolean) => {
+    chatController?.setVisible(visible)
+  })
+
+  // App State
+  ipcMain.handle('appState:get-all', () => appStateRepo?.getAll() ?? {})
+  ipcMain.handle('appState:set', (_event, key: keyof AppState, value: AppState[typeof key]) => appStateRepo?.set(key, value))
+
+  // Preferences
+  ipcMain.handle('preferences:get-all', () => preferencesRepo?.getAll() ?? {})
+  ipcMain.handle('preferences:set', (_event, key: keyof Preferences, value: Preferences[typeof key]) => preferencesRepo?.set(key, value))
+
   // Chats
   ipcMain.handle('chats:list', () => chatRepo?.listChats() ?? [])
   ipcMain.handle('chats:active', () => chatController?.getActiveChatId() ?? null)
@@ -114,22 +139,6 @@ app.whenReady().then(() => {
     const folder = folderRepo?.renameFolder(folderId, name) ?? null
     emitFoldersChanged()
     return folder
-  })
-
-  // App State
-  ipcMain.handle('appState:getAll', () => appStateRepo?.getAll() ?? {})
-  ipcMain.handle('appState:set', (_event, key: keyof AppState, value: AppState[typeof key]) => appStateRepo?.set(key, value))
-
-  // Preferences
-  ipcMain.handle('preferences:getAll', () => preferencesRepo?.getAll() ?? {})
-  ipcMain.handle('preferences:set', (_event, key: keyof Preferences, value: Preferences[typeof key]) => preferencesRepo?.set(key, value))
-
-  // Layout
-  ipcMain.on('view:set-bounds', (_event, bounds) => {
-    chatController?.setBounds(bounds)
-  })
-  ipcMain.on('view:set-visible', (_event, visible: boolean) => {
-    chatController?.setVisible(visible)
   })
 
   app.on('browser-window-created', (_, window) => {

@@ -1,6 +1,5 @@
+import { Page } from '@shared/navigation'
 import { create } from 'zustand'
-
-export type Page = { type: 'home' } | { type: 'chat-list'; folderId: number | null } | { type: 'chat'; id: number | null } | { type: 'settings' }
 
 type NavigationStore = {
   page: Page
@@ -12,6 +11,9 @@ type NavigationStore = {
 export const useNavigationStore = create<NavigationStore>((set) => ({
   page: { type: 'home' },
   actions: {
-    setPage: (page) => set({ page })
+    setPage: (page) => {
+      set({ page })
+      window.api.navigation.pageChanged(page)
+    }
   }
 }))
