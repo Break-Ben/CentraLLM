@@ -90,9 +90,9 @@ function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenu
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
   const createChat = (providerId: ChatProviderId) => {
-    setPage({ type: 'chat', id: null })
     void set('lastUsedProviderId', providerId)
     void newChat(providerId, folder.id)
+    setPage({ type: 'chat', id: null })
   }
 
   const handleNewFolder = async (): Promise<void> => {

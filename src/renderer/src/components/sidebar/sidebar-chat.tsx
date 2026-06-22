@@ -28,8 +28,8 @@ export function SidebarChat({ chat, isSub = false }: SidebarChatProps): React.JS
             isActive={page.type === 'chat' && page.id === chat.id}
             title={displayName}
             onClick={() => {
-              setPage({ type: 'chat', id: chat.id })
               void openChat(chat.id)
+              setPage({ type: 'chat', id: chat.id })
             }}
           >
             <ChatProviderIcon providerId={chat.providerId} />

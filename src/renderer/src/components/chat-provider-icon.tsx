@@ -11,11 +11,12 @@ const ICON_MAP: Record<ChatProviderId, ComponentType<SVGProps<SVGSVGElement>>> =
   claude: ClaudeLogo
 }
 
-interface ChatProviderIconProps extends SVGProps<SVGSVGElement> {
+interface ChatProviderIconProps extends Omit<SVGProps<SVGSVGElement>, 'width' | 'height'> {
   providerId: ChatProviderId
+  size?: number | string
 }
 
-export function ChatProviderIcon({ providerId, ...props }: ChatProviderIconProps) {
+export function ChatProviderIcon({ providerId, size = 16, ...props }: ChatProviderIconProps) {
   const IconComponent = ICON_MAP[providerId]
-  return <IconComponent {...props} />
+  return <IconComponent {...props} width={size} height={size} />
 }

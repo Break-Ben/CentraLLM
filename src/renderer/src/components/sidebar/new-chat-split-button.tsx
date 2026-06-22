@@ -28,8 +28,8 @@ export function NewChatSplitButton(): React.JSX.Element {
         aria-label={`New ${lastUsedProvider.name} chat`}
         title={`New ${lastUsedProvider.name} chat`}
         onClick={() => {
-          setPage({ type: 'chat', id: null })
           void newChat(lastUsedProviderId)
+          setPage({ type: 'chat', id: null })
         }}
       >
         <ChatProviderIcon providerId={lastUsedProviderId} />
@@ -45,8 +45,8 @@ export function NewChatSplitButton(): React.JSX.Element {
         aria-label={`New ${lastUsedProvider.name} chat`}
         title={`New ${lastUsedProvider.name} chat`}
         onClick={() => {
-          setPage({ type: 'chat', id: null })
           void newChat(lastUsedProviderId)
+          setPage({ type: 'chat', id: null })
         }}
       >
         <ChatProviderIcon providerId={lastUsedProviderId} />
@@ -70,9 +70,9 @@ export function NewChatSplitButton(): React.JSX.Element {
                 aria-label={`New ${provider.name} chat`}
                 title={`New ${provider.name} chat`}
                 onClick={() => {
-                  setPage({ type: 'chat', id: null })
                   void set('lastUsedProviderId', provider.id)
                   void newChat(provider.id)
+                  setPage({ type: 'chat', id: null })
                 }}
               >
                 <ChatProviderIcon providerId={provider.id} />

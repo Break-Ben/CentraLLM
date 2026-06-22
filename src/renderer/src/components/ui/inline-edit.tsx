@@ -20,7 +20,9 @@ export function InlineEdit({ initialValue, onSave, onClose, ...props }: InlineEd
   }, [])
 
   const commit = async () => {
-    if (isSavingRef.current) return
+    if (isSavingRef.current) {
+      return
+    }
 
     const next = draft.trim()
     if (!next || next === initialValue.trim()) {

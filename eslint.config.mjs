@@ -10,6 +10,7 @@ export default defineConfig(
   tseslint.configs.recommended,
   eslintPluginReact.configs.flat.recommended,
   eslintPluginReact.configs.flat['jsx-runtime'],
+  eslintConfigPrettier,
   {
     settings: {
       react: {
@@ -28,8 +29,8 @@ export default defineConfig(
       ...eslintPluginReactRefresh.configs.vite.rules,
       'react-refresh/only-export-components': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'no-type-imports' }]
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'no-type-imports' }],
+      curly: ['error', 'all']
     }
-  },
-  eslintConfigPrettier
+  }
 )
