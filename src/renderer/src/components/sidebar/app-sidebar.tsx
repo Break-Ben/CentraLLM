@@ -11,7 +11,7 @@ import { SidebarFolder } from '@/components/sidebar/sidebar-folder'
 import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { ChatProviderIcon } from '@/components/chat-provider-icon'
-import { CHAT_PROVIDER_LIST, ChatProviderId, ChatRecord, getChatProvider } from '@shared/chat'
+import { CHAT_PROVIDERS, ChatProviderId, ChatRecord, getChatProvider } from '@shared/chat'
 import { FolderNode, FolderRecord } from '@shared/folder'
 
 export function AppSidebar(): React.JSX.Element {
@@ -136,7 +136,7 @@ function AppSidebarContextMenu(): React.JSX.Element {
 
           <ContextMenuSeparator />
 
-          {CHAT_PROVIDER_LIST.map((provider) => (
+          {CHAT_PROVIDERS.map((provider) => (
             <ContextMenuItem aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} key={provider.id} onClick={() => createChat(provider.id)}>
               <ChatProviderIcon providerId={provider.id} />
               <span>{provider.name}</span>

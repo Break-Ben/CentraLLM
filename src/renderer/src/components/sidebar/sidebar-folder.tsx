@@ -9,7 +9,7 @@ import { useUiStore } from '@/stores/ui-store'
 import { useChatStore } from '@/stores/chat-store'
 import { ChatProviderIcon } from '@/components/chat-provider-icon'
 import { useNavigationStore } from '@/stores/navigation-store'
-import { getChatProvider, ChatProviderId, CHAT_PROVIDER_LIST } from '@shared/chat'
+import { getChatProvider, ChatProviderId, CHAT_PROVIDERS } from '@shared/chat'
 
 interface SidebarFolderProps {
   folder: FolderNode
@@ -118,7 +118,7 @@ function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenu
 
           <ContextMenuSeparator />
 
-          {CHAT_PROVIDER_LIST.map((provider) => (
+          {CHAT_PROVIDERS.map((provider) => (
             <ContextMenuItem key={provider.id} aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} onClick={() => createChat(provider.id)}>
               <ChatProviderIcon providerId={provider.id} />
               <span>{provider.name}</span>
