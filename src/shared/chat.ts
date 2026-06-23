@@ -1,4 +1,4 @@
-export type ChatProviderId = 'chatgpt' | 'gemini' | 'claude'
+export type ChatProviderId = 'chatgpt' | 'claude' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'mistral' | 'perplexity' | 'zai'
 
 export type ChatProvider = {
   id: ChatProviderId
@@ -33,6 +33,28 @@ export const CHAT_PROVIDERS = new Map<ChatProviderId, ChatProvider>([
     }
   ],
   [
+    'claude',
+    {
+      id: 'claude',
+      name: 'Claude',
+      newChatUrl: 'https://claude.ai/new',
+      chatUrlPrefix: 'https://claude.ai/chat/',
+      chatUrlTemplate: 'https://claude.ai/chat/{{chatId}}',
+      titleSuffix: ' - Claude'
+    }
+  ],
+  [
+    'deepseek',
+    {
+      id: 'deepseek',
+      name: 'DeepSeek',
+      newChatUrl: 'https://chat.deepseek.com',
+      chatUrlPrefix: 'https://chat.deepseek.com/a/chat/s/',
+      chatUrlTemplate: 'https://chat.deepseek.com/a/chat/s/{{chatId}}',
+      titleSuffix: ' - DeepSeek'
+    }
+  ],
+  [
     'gemini',
     {
       id: 'gemini',
@@ -44,14 +66,58 @@ export const CHAT_PROVIDERS = new Map<ChatProviderId, ChatProvider>([
     }
   ],
   [
-    'claude',
+    'grok',
     {
-      id: 'claude',
-      name: 'Claude',
-      newChatUrl: 'https://claude.ai/new',
-      chatUrlPrefix: 'https://claude.ai/chat/',
-      chatUrlTemplate: 'https://claude.ai/chat/{{chatId}}',
-      titleSuffix: ' - Claude'
+      id: 'grok',
+      name: 'Grok',
+      newChatUrl: 'https://grok.com',
+      chatUrlPrefix: 'https://grok.com/c/',
+      chatUrlTemplate: 'https://grok.com/c/{{chatId}}',
+      titleSuffix: ' - Grok'
+    }
+  ],
+  [
+    'kimi',
+    {
+      id: 'kimi',
+      name: 'Kimi',
+      newChatUrl: 'https://www.kimi.com',
+      chatUrlPrefix: 'https://www.kimi.com/chat/',
+      chatUrlTemplate: 'https://www.kimi.com/chat/{{chatId}}',
+      titleSuffix: ' - Kimi'
+    }
+  ],
+  [
+    'mistral',
+    {
+      id: 'mistral',
+      name: 'Mistral Vibe',
+      newChatUrl: 'https://chat.mistral.ai/chat',
+      chatUrlPrefix: 'https://chat.mistral.ai/chat/',
+      chatUrlTemplate: 'https://chat.mistral.ai/chat/{{chatId}}',
+      titleSuffix: ''
+    }
+  ],
+  [
+    'perplexity',
+    {
+      id: 'perplexity',
+      name: 'Perplexity',
+      newChatUrl: 'https://www.perplexity.ai',
+      chatUrlPrefix: 'https://www.perplexity.ai/search/',
+      chatUrlTemplate: 'https://www.perplexity.ai/search/{{chatId}}',
+      titleSuffix: ''
+    }
+  ],
+  [
+    'zai',
+    {
+      id: 'zai',
+      name: 'Z.ai',
+      newChatUrl: 'https://chat.z.ai',
+      chatUrlPrefix: 'https://chat.z.ai/c/',
+      chatUrlTemplate: 'https://chat.z.ai/c/{{chatId}}',
+      titleSuffix: ' - Advanced AI Chatbot & Agent powered by GLM-5.2'
     }
   ]
 ])
