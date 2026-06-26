@@ -15,6 +15,7 @@ export class FolderRepository {
   private readonly createFolderQuery: Database.Statement<[string, number | null], FolderRecord>
   private readonly deleteFolderQuery: Database.Statement<[number], void>
   private readonly renameFolderQuery: Database.Statement<[string, number], FolderRecord>
+  private readonly moveToFolderQuery: Database.Statement<[number | null, number], FolderRecord>
   private readonly listFolderNamesQuery: Database.Statement<[number | null], { name: string }>
 
   constructor(private readonly db: Database.Database) {
@@ -46,6 +47,13 @@ export class FolderRepository {
     this.renameFolderQuery = this.db.prepare(`
       UPDATE folders
       SET name = ?
+      WHERE id = ?
+      RETURNING ${SELECT_COLUMNS}
+    `)
+
+    this.moveToFolderQuery = this.db.prepare(`
+      UPDATE folders
+      SET parent_folder_id = ?
       WHERE id = ?
       RETURNING ${SELECT_COLUMNS}
     `)
@@ -86,6 +94,25 @@ export class FolderRepository {
     }
 
     return this.renameFolderQuery.get(trimmed, folderId)!
+  }
+
+  moveToFolder(folderId: number, parentFolderId: number | null): FolderRecord {
+    if (parentFolderId !== null) {
+      if (folderId === parentFolderId) {
+        throw new Error('A folder cannot be moved into itself.')
+      }
+
+      let currentId: number | null = parentFolderId
+      while (currentId !== null) {
+        if (currentId === folderId) {
+          throw new Error('Recursion error: Cannot move a folder into one of its own descendants.')
+        }
+        const parentFolder = this.getFolderById(currentId)
+        currentId = parentFolder ? parentFolder.parentFolderId : null
+      }
+    }
+
+    return this.moveToFolderQuery.get(parentFolderId, folderId)!
   }
 
   private getNextDefaultFolderName(parentFolderId: number | null): string {

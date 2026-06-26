@@ -5,7 +5,7 @@ type FolderStore = {
   folders: FolderRecord[]
   actions: {
     init: () => () => void
-    setFolders: (folders: FolderRecord[]) => void
+    moveToFolder: (folderId: number, parentFolderId: number | null) => Promise<void>
   }
 }
 
@@ -30,6 +30,8 @@ export const useFolderStore = create<FolderStore>((set) => ({
         disposeFolders()
       }
     },
-    setFolders: (folders) => set({ folders })
+    moveToFolder: async (folderId, parentFolderId) => {
+      await window.api.folders.moveToFolder(folderId, parentFolderId)
+    }
   }
 }))

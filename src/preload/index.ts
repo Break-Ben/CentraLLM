@@ -28,7 +28,7 @@ const api = {
     open: (chatId: number) => ipcRenderer.invoke('chats:open', chatId),
     new: (providerId: ChatProviderId, folderId: number | null) => ipcRenderer.invoke('chats:new', providerId, folderId),
     remove: (chatId: number) => ipcRenderer.invoke('chats:remove', chatId),
-    setFolder: (chatId: number, folderId: number | null) => ipcRenderer.invoke('chats:set-folder', chatId, folderId),
+    moveToFolder: (chatId: number, folderId: number | null) => ipcRenderer.invoke('chats:move-to-folder', chatId, folderId),
     onChanged: (callback: (chats: ChatRecord[]) => void) => {
       const listener = (_event: IpcRendererEvent, chats: ChatRecord[]) => callback(chats)
       ipcRenderer.on('chats:changed', listener)
@@ -45,6 +45,7 @@ const api = {
     create: (name?: string | null, parentFolderId?: number | null) => ipcRenderer.invoke('folders:create', name ?? null, parentFolderId ?? null),
     delete: (folderId: number) => ipcRenderer.invoke('folders:delete', folderId),
     rename: (folderId: number, name: string) => ipcRenderer.invoke('folders:rename', folderId, name),
+    moveToFolder: (folderId: number, parentFolderId: number | null) => ipcRenderer.invoke('folders:move-to-folder', folderId, parentFolderId),
     onChanged: (callback: (folders: FolderRecord[]) => void) => {
       const listener = (_event: IpcRendererEvent, folders: FolderRecord[]) => callback(folders)
       ipcRenderer.on('folders:changed', listener)

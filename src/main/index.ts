@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import Database from 'better-sqlite3'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '@resources/icon.png?asset'
 import { ChatController } from '@main/controllers/chat-controller'
 import { ChatRepository } from '@main/repos/chat-repo'
@@ -118,8 +118,8 @@ app.whenReady().then(() => {
     chatRepo?.removeChat(chatId)
     emitChatsChanged()
   })
-  ipcMain.handle('chats:set-folder', (_event, chatId: number, folderId: number | null) => {
-    chatRepo?.setFolder(chatId, folderId)
+  ipcMain.handle('chats:move-to-folder', (_event, chatId: number, folderId: number | null) => {
+    chatRepo?.moveToFolder(chatId, folderId)
     emitChatsChanged()
   })
 
@@ -140,9 +140,10 @@ app.whenReady().then(() => {
     emitFoldersChanged()
     return folder
   })
-
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+  ipcMain.handle('folders:move-to-folder', (_event, folderId: number, parentFolderId: number | null) => {
+    const folder = folderRepo?.moveToFolder(folderId, parentFolderId) ?? null
+    emitFoldersChanged()
+    return folder
   })
 
   createWindow()

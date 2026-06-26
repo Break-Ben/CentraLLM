@@ -18,7 +18,7 @@ export class ChatRepository {
   private readonly upsertChatQuery: Database.Statement<[string, string, string, number, number | null], ChatRecord>
   private readonly removeChatQuery: Database.Statement<[number], void>
   private readonly updateLastOpenedQuery: Database.Statement<[number, number], ChatRecord>
-  private readonly setFolderQuery: Database.Statement<[number | null, number], ChatRecord>
+  private readonly moveToFolderQuery: Database.Statement<[number | null, number], ChatRecord>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -69,7 +69,7 @@ export class ChatRepository {
       RETURNING ${SELECT_COLUMNS}
     `)
 
-    this.setFolderQuery = this.db.prepare(`
+    this.moveToFolderQuery = this.db.prepare(`
       UPDATE chats
       SET folder_id = ?
       WHERE id = ?
@@ -106,8 +106,8 @@ export class ChatRepository {
     return this.updateLastOpenedQuery.get(Date.now(), id)
   }
 
-  setFolder(id: number, folderId: number | null): ChatRecord | undefined {
-    return this.setFolderQuery.get(folderId, id)
+  moveToFolder(id: number, folderId: number | null): ChatRecord | undefined {
+    return this.moveToFolderQuery.get(folderId, id)
   }
 
   private ensureSchema(): void {

@@ -6,9 +6,9 @@ type ChatStore = {
   chats: ChatRecord[]
   actions: {
     init: () => () => void
-    setChats: (chats: ChatRecord[]) => void
     openChat: (chatId: number) => Promise<void>
     newChat: (providerId: ChatProviderId, folderId?: number | null) => Promise<void>
+    moveToFolder: (chatId: number, folderId: number | null) => Promise<void>
   }
 }
 
@@ -41,12 +41,14 @@ export const useChatStore = create<ChatStore>((set) => ({
         disposeActive()
       }
     },
-    setChats: (chats) => set({ chats }),
     openChat: async (chatId) => {
       await window.api.chats.open(chatId)
     },
     newChat: async (providerId: ChatProviderId, folderId: number | null = null) => {
       await window.api.chats.new(providerId, folderId)
+    },
+    moveToFolder: async (chatId, folderId) => {
+      await window.api.chats.moveToFolder(chatId, folderId)
     }
   }
 }))
