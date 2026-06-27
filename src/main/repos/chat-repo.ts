@@ -26,7 +26,6 @@ export class ChatRepository {
     this.listChatsQuery = this.db.prepare(`
       SELECT ${SELECT_COLUMNS}
       FROM chats
-      ORDER BY last_opened_at DESC, id DESC
     `)
 
     this.getChatByIdQuery = this.db.prepare(`
@@ -121,9 +120,6 @@ export class ChatRepository {
         folder_id INTEGER REFERENCES folders(id) ON DELETE CASCADE,
         UNIQUE(provider_id, chat_id)
       );
-
-      CREATE INDEX IF NOT EXISTS idx_chats_last_opened
-      ON chats (last_opened_at DESC);
 
       CREATE INDEX IF NOT EXISTS idx_chats_folder_id
       ON chats (folder_id);

@@ -3,15 +3,17 @@ import { Folder } from 'lucide-react'
 import { DragDropProvider, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useFolderStore } from '@/stores/folder-store'
+import { useAppStateStore } from '@/stores/app-state-store'
 import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { useDirectory } from '@/hooks/use-directory'
 import { getChatDisplayName, ChatRecord, getChatProvider } from '@shared/chat'
 import { FolderRecord } from '@shared/folder'
 import { formatDate } from '@shared/preferences'
-
-type DirectoryItem = { type: 'folder'; folder: FolderRecord } | { type: 'chat'; chat: ChatRecord }
+import { SORTING_OPTIONS } from '@shared/app-state'
 
 type BreadcrumbItemData = {
   id: number | null
@@ -21,16 +23,17 @@ type BreadcrumbItemData = {
 export function ChatListPage(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
   const { setPage } = useNavigationStore((state) => state.actions)
-  const chats = useChatStore((state) => state.chats)
   const { openChat, moveToFolder: moveChatToFolder } = useChatStore((state) => state.actions)
   const folders = useFolderStore((state) => state.folders)
   const { moveToFolder: moveFolderToFolder } = useFolderStore((state) => state.actions)
+  const sortingOrder = useAppStateStore((state) => state.sortingOrder)
+  const { set } = useAppStateStore((state) => state.actions)
 
   const folderId = page.type === 'chat-list' ? page.folderId : null
 
   const folderMap = useMemo(() => new Map(folders.map((folder) => [folder.id, folder])), [folders])
   const breadcrumbs = useMemo(() => buildBreadcrumbs(folderId, folderMap), [folderId, folderMap])
-  const items = useMemo(() => buildDirectoryItems(folderId, folders, chats), [folderId, folders, chats])
+  const directoryItems = useDirectory(sortingOrder, folderId)
 
   const handleDrop = async (event: DragEndEvent) => {
     const { source, target } = event.operation
@@ -51,33 +54,48 @@ export function ChatListPage(): React.JSX.Element {
   return (
     <DragDropProvider onDragEnd={handleDrop}>
       <div className="p-4">
-        <Breadcrumb className="border-b px-2 pb-3 mb-4">
-          <BreadcrumbList>
-            {breadcrumbs.map((crumb, index) => {
-              const isLast = index === breadcrumbs.length - 1
-              return (
-                <Fragment key={crumb.id ?? 'root'}>
-                  <BreadcrumbItem>
-                    {isLast ? (
-                      <BreadcrumbPage>{crumb.name}</BreadcrumbPage>
-                    ) : (
-                      <BreadcrumbLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setPage({ type: 'chat-list', folderId: crumb.id })
-                        }}
-                      >
-                        {crumb.name}
-                      </BreadcrumbLink>
-                    )}
-                  </BreadcrumbItem>
-                  {!isLast && <BreadcrumbSeparator />}
-                </Fragment>
-              )
-            })}
-          </BreadcrumbList>
-        </Breadcrumb>
+        <div className="flex items-center justify-between border-b px-2 pb-3 mb-4">
+          <Breadcrumb>
+            <BreadcrumbList>
+              {breadcrumbs.map((crumb, index) => {
+                const isLast = index === breadcrumbs.length - 1
+                return (
+                  <Fragment key={crumb.id ?? 'root'}>
+                    <BreadcrumbItem>
+                      {isLast ? (
+                        <BreadcrumbPage>{crumb.name}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setPage({ type: 'chat-list', folderId: crumb.id })
+                          }}
+                        >
+                          {crumb.name}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                    {!isLast && <BreadcrumbSeparator />}
+                  </Fragment>
+                )
+              })}
+            </BreadcrumbList>
+          </Breadcrumb>
+
+          <Select value={sortingOrder} onValueChange={(value) => set('sortingOrder', value!)} items={SORTING_OPTIONS}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORTING_OPTIONS.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <Table className="table-fixed">
           <TableHeader>
@@ -88,14 +106,14 @@ export function ChatListPage(): React.JSX.Element {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.length === 0 ? (
+            {directoryItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="py-4 text-center text-muted-foreground">
                   This folder is empty
                 </TableCell>
               </TableRow>
             ) : (
-              items.map((item) =>
+              directoryItems.map((item) =>
                 item.type === 'folder' ? (
                   <FolderRow key={`folder-${item.folder.id}`} folder={item.folder} onOpen={() => setPage({ type: 'chat-list', folderId: item.folder.id })} />
                 ) : (
@@ -164,13 +182,6 @@ function ChatRow({ chat, onOpen }: { chat: ChatRecord; onOpen: () => void }) {
       <TableCell>{formatDate(chat.lastOpenedAt)}</TableCell>
     </TableRow>
   )
-}
-
-function buildDirectoryItems(folderId: number | null, folders: FolderRecord[], chats: ChatRecord[]): DirectoryItem[] {
-  const folderItems: DirectoryItem[] = folders.filter((folder) => folder.parentFolderId === folderId).map((folder) => ({ type: 'folder', folder }))
-  const chatItems: DirectoryItem[] = chats.filter((chat) => chat.folderId === folderId).map((chat) => ({ type: 'chat', chat }))
-
-  return [...folderItems, ...chatItems]
 }
 
 function buildBreadcrumbs(folderId: number | null, folderMap: Map<number, FolderRecord>): BreadcrumbItemData[] {

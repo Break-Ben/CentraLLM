@@ -24,7 +24,6 @@ export class FolderRepository {
     this.listFoldersQuery = this.db.prepare(`
       SELECT ${SELECT_COLUMNS}
       FROM folders
-      ORDER BY name COLLATE NOCASE ASC, id ASC
     `)
 
     this.getFolderByIdQuery = this.db.prepare(`
