@@ -9,7 +9,6 @@ import GrokLogo from '@/assets/provider-logos/grok.svg?react'
 import KimiLogo from '@/assets/provider-logos/kimi.svg?react'
 import MistralLogo from '@/assets/provider-logos/mistral.svg?react'
 import PerplexityLogo from '@/assets/provider-logos/perplexity.svg?react'
-import ZaiLogo from '@/assets/provider-logos/zai.svg?react'
 
 const ICON_MAP: Record<ChatProviderId, ComponentType<SVGProps<SVGSVGElement>>> = {
   chatgpt: ChatGPTLogo,
@@ -19,8 +18,7 @@ const ICON_MAP: Record<ChatProviderId, ComponentType<SVGProps<SVGSVGElement>>> =
   grok: GrokLogo,
   kimi: KimiLogo,
   mistral: MistralLogo,
-  perplexity: PerplexityLogo,
-  zai: ZaiLogo
+  perplexity: PerplexityLogo
 }
 
 interface ChatProviderIconProps extends Omit<SVGProps<SVGSVGElement>, 'width' | 'height'> {

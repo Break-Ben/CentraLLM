@@ -1,4 +1,4 @@
-export type ChatProviderId = 'chatgpt' | 'claude' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'mistral' | 'perplexity' | 'zai'
+export type ChatProviderId = 'chatgpt' | 'claude' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'mistral' | 'perplexity'
 
 export type ChatProvider = {
   id: ChatProviderId
@@ -85,14 +85,6 @@ export const CHAT_PROVIDERS = [
     chatUrlPrefix: 'https://www.perplexity.ai/search/',
     chatUrlTemplate: 'https://www.perplexity.ai/search/{{chatId}}',
     titleSuffix: ''
-  },
-  {
-    id: 'zai',
-    name: 'Z.ai',
-    newChatUrl: 'https://chat.z.ai',
-    chatUrlPrefix: 'https://chat.z.ai/c/',
-    chatUrlTemplate: 'https://chat.z.ai/c/{{chatId}}',
-    titleSuffix: ' - Advanced AI Chatbot & Agent powered by GLM-5.2'
   }
 ] as const
 
