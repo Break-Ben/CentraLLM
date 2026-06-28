@@ -6,7 +6,8 @@ const DEFAULT_FOLDER_NAME = 'New Folder'
 const SELECT_COLUMNS = `
   id,
   name,
-  parent_folder_id AS parentFolderId
+  parent_folder_id AS parentFolderId,
+  custom_order AS customOrder
 `
 
 export class FolderRepository {
@@ -17,6 +18,9 @@ export class FolderRepository {
   private readonly renameFolderQuery: Database.Statement<[string, number], FolderRecord>
   private readonly moveToFolderQuery: Database.Statement<[number | null, number], FolderRecord>
   private readonly listFolderNamesQuery: Database.Statement<[number | null], { name: string }>
+  private readonly updateCustomOrderQuery: Database.Statement<[number, number], FolderRecord>
+  private readonly getMaxCustomOrderQuery: Database.Statement<[number, number], { maxOrder: number }>
+  private readonly getMoveBoundsQuery: Database.Statement<[number, number], { targetOrder: number; prevOrder: number | null }>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -33,8 +37,8 @@ export class FolderRepository {
     `)
 
     this.createFolderQuery = this.db.prepare(`
-      INSERT INTO folders (name, parent_folder_id)
-      VALUES (?, ?)
+      INSERT INTO folders (name, parent_folder_id, custom_order)
+      VALUES (?, ?, (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM folders))
       RETURNING ${SELECT_COLUMNS}
     `)
 
@@ -61,6 +65,31 @@ export class FolderRepository {
       SELECT name
       FROM folders
       WHERE COALESCE(parent_folder_id, 0) = COALESCE(?, 0)
+    `)
+
+    this.updateCustomOrderQuery = this.db.prepare(`
+      UPDATE folders
+      SET custom_order = ?
+      WHERE id = ?
+      RETURNING ${SELECT_COLUMNS}
+    `)
+
+    this.getMaxCustomOrderQuery = this.db.prepare(`
+      SELECT COALESCE(MAX(custom_order), 0) AS maxOrder
+      FROM folders
+      WHERE parent_folder_id IS (SELECT parent_folder_id FROM folders WHERE id = ?) AND id != ?
+    `)
+
+    this.getMoveBoundsQuery = this.db.prepare(`
+      WITH target AS (SELECT custom_order, parent_folder_id FROM folders WHERE id = ?)
+      SELECT
+        target.custom_order AS targetOrder,
+        (
+          SELECT MAX(custom_order)
+          FROM folders
+          WHERE parent_folder_id IS target.parent_folder_id AND custom_order < target.custom_order AND id != ?
+        ) AS prevOrder
+      FROM target
     `)
   }
 
@@ -114,6 +143,16 @@ export class FolderRepository {
     return this.moveToFolderQuery.get(parentFolderId, folderId)!
   }
 
+  moveBefore(sourceId: number, targetId: number | null): FolderRecord | undefined {
+    if (targetId === null) {
+      const { maxOrder } = this.getMaxCustomOrderQuery.get(sourceId, sourceId)!
+      return this.updateCustomOrderQuery.get(maxOrder + 1, sourceId)
+    }
+    const { targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
+    const newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1
+    return this.updateCustomOrderQuery.get(newOrder, sourceId)
+  }
+
   private getNextDefaultFolderName(parentFolderId: number | null): string {
     const names = this.listFolderNamesQuery.all(parentFolderId).map((row) => row.name)
     let maxSuffix = 0
@@ -138,7 +177,8 @@ export class FolderRepository {
       CREATE TABLE IF NOT EXISTS folders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        parent_folder_id INTEGER REFERENCES folders(id) ON DELETE CASCADE
+        parent_folder_id INTEGER REFERENCES folders(id) ON DELETE CASCADE,
+        custom_order REAL
       );
 
       CREATE INDEX IF NOT EXISTS idx_folders_parent_id

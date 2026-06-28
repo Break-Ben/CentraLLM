@@ -9,6 +9,7 @@ type ChatStore = {
     openChat: (chatId: number) => Promise<void>
     newChat: (providerId: ChatProviderId, folderId?: number | null) => Promise<void>
     moveToFolder: (chatId: number, folderId: number | null) => Promise<void>
+    moveBefore: (chatId: number, beforeChatId: number | null) => Promise<void>
   }
 }
 
@@ -49,6 +50,9 @@ export const useChatStore = create<ChatStore>((set) => ({
     },
     moveToFolder: async (chatId, folderId) => {
       await window.api.chats.moveToFolder(chatId, folderId)
+    },
+    moveBefore: async (chatId, beforeChatId) => {
+      await window.api.chats.moveBefore(chatId, beforeChatId)
     }
   }
 }))

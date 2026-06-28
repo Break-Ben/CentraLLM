@@ -16,6 +16,7 @@ export type ChatRecord = {
   title: string
   lastOpenedAt: number
   folderId: number | null
+  customOrder: number
 }
 
 export type ChatLocation = Pick<ChatRecord, 'providerId' | 'chatId'>

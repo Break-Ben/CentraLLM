@@ -7,7 +7,8 @@ const SELECT_COLUMNS = `
   chat_id AS chatId,
   title,
   last_opened_at AS lastOpenedAt,
-  folder_id AS folderId
+  folder_id AS folderId,
+  custom_order AS customOrder
 `
 
 export class ChatRepository {
@@ -19,6 +20,9 @@ export class ChatRepository {
   private readonly removeChatQuery: Database.Statement<[number], void>
   private readonly updateLastOpenedQuery: Database.Statement<[number, number], ChatRecord>
   private readonly moveToFolderQuery: Database.Statement<[number | null, number], ChatRecord>
+  private readonly updateCustomOrderQuery: Database.Statement<[number, number], ChatRecord>
+  private readonly getMaxCustomOrderQuery: Database.Statement<[number, number], { maxOrder: number }>
+  private readonly getMoveBoundsQuery: Database.Statement<[number, number], { targetOrder: number; prevOrder: number | null }>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -48,8 +52,8 @@ export class ChatRepository {
     `)
 
     this.upsertChatQuery = this.db.prepare(`
-      INSERT INTO chats (provider_id, chat_id, title, last_opened_at, folder_id)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO chats (provider_id, chat_id, title, last_opened_at, folder_id, custom_order)
+      VALUES (?, ?, ?, ?, ?, (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM chats))
       ON CONFLICT(provider_id, chat_id) DO UPDATE SET
         title = CASE WHEN excluded.title <> '' THEN excluded.title ELSE chats.title END,
         last_opened_at = excluded.last_opened_at
@@ -73,6 +77,31 @@ export class ChatRepository {
       SET folder_id = ?
       WHERE id = ?
       RETURNING ${SELECT_COLUMNS}
+    `)
+
+    this.updateCustomOrderQuery = this.db.prepare(`
+      UPDATE chats
+      SET custom_order = ?
+      WHERE id = ?
+      RETURNING ${SELECT_COLUMNS}
+    `)
+
+    this.getMaxCustomOrderQuery = this.db.prepare(`
+      SELECT COALESCE(MAX(custom_order), 0) AS maxOrder
+      FROM chats
+      WHERE folder_id IS (SELECT folder_id FROM chats WHERE id = ?) AND id != ?
+    `)
+
+    this.getMoveBoundsQuery = this.db.prepare(`
+      WITH target AS (SELECT custom_order, folder_id FROM chats WHERE id = ?)
+      SELECT
+        target.custom_order AS targetOrder,
+        (
+          SELECT MAX(custom_order)
+          FROM chats
+          WHERE folder_id IS target.folder_id AND custom_order < target.custom_order AND id != ?
+        ) AS prevOrder
+      FROM target
     `)
   }
 
@@ -109,6 +138,16 @@ export class ChatRepository {
     return this.moveToFolderQuery.get(folderId, id)
   }
 
+  moveBefore(sourceId: number, targetId: number | null): ChatRecord | undefined {
+    if (targetId === null) {
+      const { maxOrder } = this.getMaxCustomOrderQuery.get(sourceId, sourceId)!
+      return this.updateCustomOrderQuery.get(maxOrder + 1, sourceId)
+    }
+    const { targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
+    const newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1
+    return this.updateCustomOrderQuery.get(newOrder, sourceId)
+  }
+
   private ensureSchema(): void {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS chats (
@@ -118,6 +157,7 @@ export class ChatRepository {
         title TEXT NOT NULL DEFAULT '',
         last_opened_at INTEGER NOT NULL,
         folder_id INTEGER REFERENCES folders(id) ON DELETE CASCADE,
+        custom_order REAL,
         UNIQUE(provider_id, chat_id)
       );
 

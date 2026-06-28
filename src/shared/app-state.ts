@@ -1,10 +1,11 @@
 import { ChatProviderId } from '@shared/chat'
 
-export type SortingOrder = 'alphabetical' | 'last_opened'
+export type SortingOrder = 'alphabetical' | 'last_opened' | 'custom'
 
 export const SORTING_OPTIONS: { value: SortingOrder; label: string }[] = [
   { value: 'alphabetical', label: 'Alphabetical' },
-  { value: 'last_opened', label: 'Last Opened' }
+  { value: 'last_opened', label: 'Last Opened' },
+  { value: 'custom', label: 'Custom' }
 ] as const
 
 export interface AppState {

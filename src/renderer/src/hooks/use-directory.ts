@@ -19,6 +19,9 @@ export function useDirectory(sortingOrder: SortingOrder, folderId?: number | nul
     } else if (sortingOrder === 'last_opened') {
       filteredFolders.sort((a, b) => a.name.localeCompare(b.name))
       filteredChats.sort((a, b) => new Date(b.lastOpenedAt).getTime() - new Date(a.lastOpenedAt).getTime())
+    } else if (sortingOrder === 'custom') {
+      filteredFolders.sort((a, b) => a.customOrder - b.customOrder)
+      filteredChats.sort((a, b) => a.customOrder - b.customOrder)
     }
 
     const folderItems = filteredFolders.map((folder): DirectoryItem => ({ type: 'folder', folder }))
