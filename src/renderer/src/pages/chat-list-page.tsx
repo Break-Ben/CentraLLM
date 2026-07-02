@@ -18,6 +18,7 @@ import { FolderRecord } from '@shared/folder'
 import { formatDate } from '@shared/preferences'
 import { SORTING_OPTIONS } from '@shared/app-state'
 import { DragItemData, DropFolderData } from '@/constants/directory'
+import { cn } from '@/lib/utils'
 
 type BreadcrumbItemData = {
   id: number | null
@@ -172,17 +173,16 @@ function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropItem, onM
     return combine(
       draggable({
         element,
-        getInitialData: () => ({ type: 'folder', id: folder.id }) satisfies DragItemData
+        getInitialData: () => ({ type: 'folder', id: folder.id, parentFolderId: folder.parentFolderId }) satisfies DragItemData
       }),
       dropTargetForElements({
         element,
-        getData: ({ input, element }) => {
-          return attachInstruction({ type: 'folder', id: folder.id } satisfies DropFolderData, {
+        getData: ({ input, element }) =>
+          attachInstruction({ type: 'folder', id: folder.id } satisfies DropFolderData, {
             input,
             element,
             operations: isCustomSort ? { 'reorder-before': 'available', 'reorder-after': 'available', combine: 'available' } : { combine: 'available' }
-          })
-        },
+          }),
         canDrop: ({ source }) => {
           if (source.data.id === folder.id) {
             return false
@@ -239,16 +239,17 @@ function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropItem, onM
         }
       })
     )
-  }, [folder.id, isCustomSort, nextFolderId, onDropItem, onMoveBefore])
+  }, [folder.id, folder.parentFolderId, isCustomSort, nextFolderId, onDropItem, onMoveBefore])
 
   return (
     <TableRow
       ref={rowRef}
-      className={`cursor-default select-none
-        ${dropIndicator === 'inside' ? 'bg-accent/60 text-accent-foreground' : ''}
-        ${dropIndicator === 'top' ? '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]' : ''}
-        ${dropIndicator === 'bottom' ? '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]' : ''}
-      `}
+      className={cn(
+        'cursor-default select-none',
+        dropIndicator === 'inside' && 'bg-accent/60 text-accent-foreground',
+        dropIndicator === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]',
+        dropIndicator === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]'
+      )}
       onDoubleClick={onOpen}
     >
       <TableCell>
@@ -284,14 +285,12 @@ function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore }: ChatR
     return combine(
       draggable({
         element,
-        getInitialData: () => ({ type: 'chat', id: chat.id }) satisfies DragItemData
+        getInitialData: () => ({ type: 'chat', id: chat.id, parentFolderId: chat.folderId }) satisfies DragItemData
       }),
       dropTargetForElements({
         element,
         canDrop: ({ source }) => isCustomSort && source.data.type === 'chat' && source.data.id !== chat.id,
-        getData: ({ input, element }) => {
-          return attachClosestEdge({ type: 'chat', id: chat.id }, { input, element, allowedEdges: ['top', 'bottom'] })
-        },
+        getData: ({ input, element }) => attachClosestEdge({ type: 'chat', id: chat.id }, { input, element, allowedEdges: ['top', 'bottom'] }),
         onDragEnter: ({ self }) => setClosestEdge(extractClosestEdge(self.data)),
         onDrag: ({ self }) => setClosestEdge(extractClosestEdge(self.data)),
         onDragLeave: () => setClosestEdge(null),
@@ -306,17 +305,10 @@ function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore }: ChatR
         }
       })
     )
-  }, [chat.id, isCustomSort, nextChatId, onMoveBefore])
+  }, [chat.id, chat.folderId, isCustomSort, nextChatId, onMoveBefore])
 
   return (
-    <TableRow
-      ref={rowRef}
-      className={`cursor-default select-none
-        ${closestEdge === 'top' ? '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]' : ''}
-        ${closestEdge === 'bottom' ? '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]' : ''}
-      `}
-      onDoubleClick={onOpen}
-    >
+    <TableRow ref={rowRef} className={cn('cursor-default select-none', closestEdge === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]')} onDoubleClick={onOpen}>
       <TableCell>
         <span className="inline-flex items-center gap-2">
           <ChatProviderIcon providerId={chat.providerId} />
