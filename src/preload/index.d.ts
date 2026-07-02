@@ -30,7 +30,8 @@ declare global {
         new: (providerId: ChatProviderId, folderId: number | null) => Promise<void>
         remove: (chatId: number) => Promise<void>
         moveToFolder: (chatId: number, folderId: number | null) => Promise<void>
-        moveBefore: (chatId: number, beforeChatId: number | null) => Promise<void>
+        moveBefore: (chatId: number, beforeChatId: number) => Promise<void>
+        moveAfter: (chatId: number, afterChatId: number) => Promise<void>
         onChanged: (callback: (chats: ChatRecord[]) => void) => () => void
         onActiveChanged: (callback: (chatId: number | null) => void) => () => void
       }
@@ -40,7 +41,8 @@ declare global {
         delete: (folderId: number) => Promise<void>
         rename: (folderId: number, name: string) => Promise<FolderRecord | null>
         moveToFolder: (folderId: number, parentFolderId: number | null) => Promise<FolderRecord | null>
-        moveBefore: (folderId: number, beforeFolderId: number | null) => Promise<void>
+        moveBefore: (folderId: number, beforeFolderId: number) => Promise<void>
+        moveAfter: (folderId: number, afterFolderId: number) => Promise<void>
         onChanged: (callback: (folders: FolderRecord[]) => void) => () => void
       }
     }

@@ -16,17 +16,16 @@ interface SidebarChatProps {
   chat: ChatRecord
   depth: number
   parentFolderId: number | null
-  nextSiblingId: number | null
   isCustomSort: boolean
 }
 
-export function SidebarChat({ chat, depth, parentFolderId, nextSiblingId, isCustomSort }: SidebarChatProps): React.JSX.Element {
+export function SidebarChat({ chat, depth, parentFolderId, isCustomSort }: SidebarChatProps): React.JSX.Element {
   const itemRef = useRef<HTMLLIElement | null>(null)
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null)
 
   const page = useNavigationStore((state) => state.page)
   const { setPage } = useNavigationStore((state) => state.actions)
-  const { openChat, moveBefore } = useChatStore((state) => state.actions)
+  const { openChat, moveBefore, moveAfter } = useChatStore((state) => state.actions)
 
   const displayName = getChatDisplayName(chat)
 
@@ -54,12 +53,12 @@ export function SidebarChat({ chat, depth, parentFolderId, nextSiblingId, isCust
           if (edge === 'top') {
             void moveBefore(source.data.id as number, chat.id)
           } else if (edge === 'bottom') {
-            void moveBefore(source.data.id as number, nextSiblingId)
+            void moveAfter(source.data.id as number, chat.id)
           }
         }
       })
     )
-  }, [chat.id, parentFolderId, nextSiblingId, isCustomSort, moveBefore])
+  }, [chat.id, parentFolderId, isCustomSort, moveBefore])
 
   return (
     <SidebarMenuItem

@@ -126,6 +126,10 @@ app.whenReady().then(() => {
     chatRepo?.moveBefore(chatId, beforeChatId)
     emitChatsChanged()
   })
+  ipcMain.handle('chats:move-after', (_event, chatId: number, afterChatId: number) => {
+    chatRepo?.moveAfter(chatId, afterChatId)
+    emitChatsChanged()
+  })
 
   // Folders
   ipcMain.handle('folders:list', () => folderRepo?.listFolders() ?? [])
@@ -151,6 +155,10 @@ app.whenReady().then(() => {
   })
   ipcMain.handle('folders:move-before', (_event, folderId: number, beforeFolderId: number) => {
     folderRepo?.moveBefore(folderId, beforeFolderId)
+    emitFoldersChanged()
+  })
+  ipcMain.handle('folders:move-after', (_event, folderId: number, afterFolderId: number) => {
+    folderRepo?.moveAfter(folderId, afterFolderId)
     emitFoldersChanged()
   })
 

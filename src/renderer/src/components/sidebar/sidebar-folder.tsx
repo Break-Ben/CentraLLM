@@ -21,16 +21,15 @@ interface SidebarFolderProps {
   folder: FolderRecord
   depth: number
   parentFolderId: number | null
-  nextSiblingId: number | null
   isCustomSort: boolean
 }
 
-export function SidebarFolder({ folder, depth, parentFolderId, nextSiblingId, isCustomSort }: SidebarFolderProps): React.JSX.Element {
+export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: SidebarFolderProps): React.JSX.Element {
   const itemRef = useRef<HTMLLIElement | null>(null)
   const [dropIndicator, setDropIndicator] = useState<'inside' | 'top' | 'bottom' | null>(null)
 
   const folders = useFolderStore((state) => state.folders)
-  const { moveToFolder: moveFolderToFolder, moveBefore: moveFolderBefore } = useFolderStore((state) => state.actions)
+  const { moveToFolder: moveFolderToFolder, moveBefore, moveAfter } = useFolderStore((state) => state.actions)
   const { moveToFolder: moveChatToFolder } = useChatStore((state) => state.actions)
 
   const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
@@ -83,9 +82,9 @@ export function SidebarFolder({ folder, depth, parentFolderId, nextSiblingId, is
 
           const operation = extractInstruction(self.data)?.operation
           if (operation === 'reorder-before') {
-            void moveFolderBefore(src.id, folder.id)
+            void moveBefore(src.id, folder.id)
           } else if (operation === 'reorder-after') {
-            void moveFolderBefore(src.id, nextSiblingId)
+            void moveAfter(src.id, folder.id)
           } else {
             void moveFolderToFolder(src.id, folder.id)
           }
@@ -108,7 +107,7 @@ export function SidebarFolder({ folder, depth, parentFolderId, nextSiblingId, is
         setDropIndicator('inside')
       }
     }
-  }, [folder.id, parentFolderId, nextSiblingId, isCustomSort, folders, moveChatToFolder, moveFolderToFolder, moveFolderBefore])
+  }, [folder.id, parentFolderId, isCustomSort, folders, moveChatToFolder, moveFolderToFolder, moveBefore, moveAfter])
 
   return (
     <SidebarMenuItem

@@ -19,8 +19,8 @@ export class FolderRepository {
   private readonly moveToFolderQuery: Database.Statement<[number | null, number | null, number], FolderRecord>
   private readonly listFolderNamesQuery: Database.Statement<[number | null], { name: string }>
   private readonly updateCustomOrderQuery: Database.Statement<[number, number], FolderRecord>
-  private readonly getMaxCustomOrderQuery: Database.Statement<[number, number], { maxOrder: number }>
   private readonly getMoveBoundsQuery: Database.Statement<[number, number], { parentFolderId: number | null; targetOrder: number; prevOrder: number | null }>
+  private readonly getMoveAfterBoundsQuery: Database.Statement<[number, number], { parentFolderId: number | null; targetOrder: number; nextOrder: number | null }>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -75,12 +75,6 @@ export class FolderRepository {
       RETURNING ${SELECT_COLUMNS}
     `)
 
-    this.getMaxCustomOrderQuery = this.db.prepare(`
-      SELECT COALESCE(MAX(custom_order), 0) AS maxOrder
-      FROM folders
-      WHERE parent_folder_id IS (SELECT parent_folder_id FROM folders WHERE id = ?) AND id != ?
-    `)
-
     this.getMoveBoundsQuery = this.db.prepare(`
       WITH target AS (SELECT custom_order, parent_folder_id FROM folders WHERE id = ?)
       SELECT
@@ -91,6 +85,19 @@ export class FolderRepository {
           FROM folders
           WHERE parent_folder_id IS target.parent_folder_id AND custom_order < target.custom_order AND id != ?
         ) AS prevOrder
+      FROM target
+    `)
+
+    this.getMoveAfterBoundsQuery = this.db.prepare(`
+      WITH target AS (SELECT custom_order, parent_folder_id FROM folders WHERE id = ?)
+      SELECT
+        target.parent_folder_id AS parentFolderId,
+        target.custom_order AS targetOrder,
+        (
+          SELECT MIN(custom_order)
+          FROM folders
+          WHERE parent_folder_id IS target.parent_folder_id AND custom_order > target.custom_order AND id != ?
+        ) AS nextOrder
       FROM target
     `)
   }
@@ -145,14 +152,17 @@ export class FolderRepository {
     return this.moveToFolderQuery.get(parentFolderId, parentFolderId, folderId)!
   }
 
-  moveBefore(sourceId: number, targetId: number | null): FolderRecord | undefined {
-    if (targetId === null) {
-      const { maxOrder } = this.getMaxCustomOrderQuery.get(sourceId, sourceId)!
-      return this.updateCustomOrderQuery.get(maxOrder + 1, sourceId)
-    }
+  moveBefore(sourceId: number, targetId: number): FolderRecord | undefined {
     const { parentFolderId, targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
     this.moveToFolder(sourceId, parentFolderId)
     const newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1
+    return this.updateCustomOrderQuery.get(newOrder, sourceId)
+  }
+
+  moveAfter(sourceId: number, targetId: number): FolderRecord | undefined {
+    const { parentFolderId, targetOrder, nextOrder } = this.getMoveAfterBoundsQuery.get(targetId, sourceId)!
+    this.moveToFolder(sourceId, parentFolderId)
+    const newOrder = nextOrder !== null ? (targetOrder + nextOrder) / 2 : targetOrder + 1
     return this.updateCustomOrderQuery.get(newOrder, sourceId)
   }
 

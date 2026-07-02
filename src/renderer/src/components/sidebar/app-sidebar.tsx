@@ -71,9 +71,9 @@ export function AppSidebar(): React.JSX.Element {
                 <SidebarMenu>
                   {items.map((item) =>
                     item.type === 'folder' ? (
-                      <SidebarFolder key={`folder-${item.folder.id}`} folder={item.folder} depth={item.depth} parentFolderId={item.parentFolderId} nextSiblingId={item.nextSiblingId} isCustomSort={isCustomSort} />
+                      <SidebarFolder key={`folder-${item.folder.id}`} folder={item.folder} depth={item.depth} parentFolderId={item.parentFolderId} isCustomSort={isCustomSort} />
                     ) : (
-                      <SidebarChat key={`chat-${item.chat.id}`} chat={item.chat} depth={item.depth} parentFolderId={item.parentFolderId} nextSiblingId={item.nextSiblingId} isCustomSort={isCustomSort} />
+                      <SidebarChat key={`chat-${item.chat.id}`} chat={item.chat} depth={item.depth} parentFolderId={item.parentFolderId} isCustomSort={isCustomSort} />
                     )
                   )}
                 </SidebarMenu>

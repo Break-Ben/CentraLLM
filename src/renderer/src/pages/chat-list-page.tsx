@@ -28,9 +28,9 @@ type BreadcrumbItemData = {
 export function ChatListPage(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
   const { setPage } = useNavigationStore((state) => state.actions)
-  const { openChat, moveToFolder: moveChatToFolder, moveBefore: moveChatBefore } = useChatStore((state) => state.actions)
+  const { openChat, moveToFolder: moveChatToFolder, moveBefore: moveChatBefore, moveAfter: moveChatAfter } = useChatStore((state) => state.actions)
   const folders = useFolderStore((state) => state.folders)
-  const { moveToFolder: moveFolderToFolder, moveBefore: moveFolderBefore } = useFolderStore((state) => state.actions)
+  const { moveToFolder: moveFolderToFolder, moveBefore: moveFolderBefore, moveAfter: moveFolderAfter } = useFolderStore((state) => state.actions)
   const sortingOrder = useAppStateStore((state) => state.sortingOrder)
   const { set } = useAppStateStore((state) => state.actions)
 
@@ -117,6 +117,7 @@ export function ChatListPage(): React.JSX.Element {
                     nextFolderId={nextFolderId}
                     onOpen={() => setPage({ type: 'chat-list', folderId: item.folder.id })}
                     onMoveBefore={(sourceId, targetId) => void moveFolderBefore(sourceId, targetId)}
+                    onMoveAfter={(sourceId, targetId) => void moveFolderAfter(sourceId, targetId)}
                     onDropItem={(source) => {
                       if (source.type === 'chat') {
                         void moveChatToFolder(source.id, item.folder.id)
@@ -140,6 +141,7 @@ export function ChatListPage(): React.JSX.Element {
                       setPage({ type: 'chat', id: item.chat.id })
                     }}
                     onMoveBefore={(sourceId, targetId) => void moveChatBefore(sourceId, targetId)}
+                    onMoveAfter={(sourceId, targetId) => void moveChatAfter(sourceId, targetId)}
                   />
                 )
               }
@@ -157,10 +159,11 @@ interface FolderRowProps {
   nextFolderId: number | null
   onOpen: () => void
   onDropItem: (source: DragItemData) => void
-  onMoveBefore: (sourceId: number, targetId: number | null) => void
+  onMoveBefore: (sourceId: number, targetId: number) => void
+  onMoveAfter: (sourceId: number, targetId: number) => void
 }
 
-function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropItem, onMoveBefore }: FolderRowProps) {
+function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropItem, onMoveBefore, onMoveAfter }: FolderRowProps) {
   const rowRef = useRef<HTMLTableRowElement | null>(null)
   const [dropIndicator, setDropIndicator] = useState<'inside' | 'top' | 'bottom' | null>(null)
 
@@ -232,14 +235,14 @@ function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropItem, onM
           if (operation === 'reorder-before') {
             onMoveBefore(source.data.id as number, folder.id)
           } else if (operation === 'reorder-after') {
-            onMoveBefore(source.data.id as number, nextFolderId)
+            onMoveAfter(source.data.id as number, folder.id)
           } else {
             onDropItem(source.data as DragItemData)
           }
         }
       })
     )
-  }, [folder.id, folder.parentFolderId, isCustomSort, nextFolderId, onDropItem, onMoveBefore])
+  }, [folder.id, folder.parentFolderId, isCustomSort, nextFolderId, onDropItem, onMoveAfter, onMoveBefore])
 
   return (
     <TableRow
@@ -269,10 +272,11 @@ interface ChatRowProps {
   isCustomSort: boolean
   nextChatId: number | null
   onOpen: () => void
-  onMoveBefore: (sourceId: number, targetId: number | null) => void
+  onMoveBefore: (sourceId: number, targetId: number) => void
+  onMoveAfter: (sourceId: number, targetId: number) => void
 }
 
-function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore }: ChatRowProps) {
+function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore, onMoveAfter }: ChatRowProps) {
   const rowRef = useRef<HTMLTableRowElement | null>(null)
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null)
 
@@ -300,12 +304,12 @@ function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore }: ChatR
           if (edge === 'top') {
             onMoveBefore(source.data.id as number, chat.id)
           } else if (edge === 'bottom') {
-            onMoveBefore(source.data.id as number, nextChatId)
+            onMoveAfter(source.data.id as number, chat.id)
           }
         }
       })
     )
-  }, [chat.id, chat.folderId, isCustomSort, nextChatId, onMoveBefore])
+  }, [chat.id, chat.folderId, isCustomSort, nextChatId, onMoveBefore, onMoveAfter])
 
   return (
     <TableRow ref={rowRef} className={cn('cursor-default select-none', closestEdge === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]')} onDoubleClick={onOpen}>

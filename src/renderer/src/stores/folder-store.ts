@@ -6,7 +6,8 @@ type FolderStore = {
   actions: {
     init: () => () => void
     moveToFolder: (folderId: number, parentFolderId: number | null) => Promise<void>
-    moveBefore: (folderId: number, beforeFolderId: number | null) => Promise<void>
+    moveBefore: (folderId: number, beforeFolderId: number) => Promise<void>
+    moveAfter: (folderId: number, afterFolderId: number) => Promise<void>
   }
 }
 
@@ -36,6 +37,9 @@ export const useFolderStore = create<FolderStore>((set) => ({
     },
     moveBefore: async (folderId, beforeFolderId) => {
       await window.api.folders.moveBefore(folderId, beforeFolderId)
+    },
+    moveAfter: async (folderId, afterFolderId) => {
+      await window.api.folders.moveAfter(folderId, afterFolderId)
     }
   }
 }))
