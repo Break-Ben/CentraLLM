@@ -21,27 +21,13 @@ import { cn } from '@/lib/utils'
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
   const { setPage } = useNavigationStore((state) => state.actions)
-  const folders = useFolderStore((state) => state.folders)
   const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
   const sortingOrder = useAppStateStore((state) => state.sortingOrder)
-  const { set } = useAppStateStore((state) => state.actions)
   const { moveToFolder: moveFolderToFolder } = useFolderStore((state) => state.actions)
   const { moveToFolder: moveChatToFolder } = useChatStore((state) => state.actions)
 
-  const [prevFolders, setPrevFolders] = useState(folders)
   const [isDragOver, setIsDragOver] = useState(false)
   const groupRef = useRef<HTMLDivElement | null>(null)
-
-  if (folders !== prevFolders) {
-    setPrevFolders(folders)
-
-    const knownIds = new Set(prevFolders.map((folder) => folder.id))
-    const newlyCreatedIds = folders.filter((folder) => !knownIds.has(folder.id)).map((folder) => folder.id)
-
-    if (knownIds.size > 0 && newlyCreatedIds.length > 0) {
-      void set('expandedFolderIds', [...expandedFolderIds, ...newlyCreatedIds])
-    }
-  }
 
   useEffect(() => {
     const element = groupRef.current
