@@ -12,15 +12,15 @@ const SELECT_COLUMNS = `
 
 export class FolderRepository {
   private readonly listFoldersQuery: Database.Statement<[], FolderRecord>
-  private readonly getFolderByIdQuery: Database.Statement<[number], FolderRecord>
-  private readonly createFolderQuery: Database.Statement<[string, number | null], FolderRecord>
-  private readonly deleteFolderQuery: Database.Statement<[number], void>
-  private readonly renameFolderQuery: Database.Statement<[string, number], FolderRecord>
-  private readonly moveToFolderQuery: Database.Statement<[number | null, number | null, number], FolderRecord>
-  private readonly listFolderNamesQuery: Database.Statement<[number | null], { name: string }>
-  private readonly updateCustomOrderQuery: Database.Statement<[number, number], FolderRecord>
-  private readonly getMoveBoundsQuery: Database.Statement<[number, number], { parentFolderId: number | null; targetOrder: number; prevOrder: number | null }>
-  private readonly getMoveAfterBoundsQuery: Database.Statement<[number, number], { parentFolderId: number | null; targetOrder: number; nextOrder: number | null }>
+  private readonly getFolderByIdQuery: Database.Statement<[{ folderId: number }], FolderRecord>
+  private readonly createFolderQuery: Database.Statement<[{ name: string; parentFolderId: number | null }], FolderRecord>
+  private readonly deleteFolderQuery: Database.Statement<[{ folderId: number }], void>
+  private readonly renameFolderQuery: Database.Statement<[{ folderId: number; name: string }], FolderRecord>
+  private readonly moveToFolderQuery: Database.Statement<[{ folderId: number; parentFolderId: number | null }], FolderRecord>
+  private readonly listFolderNamesQuery: Database.Statement<[{ parentFolderId: number | null }], { name: string }>
+  private readonly updateCustomOrderQuery: Database.Statement<[{ folderId: number; customOrder: number }], FolderRecord>
+  private readonly getMoveBeforeBoundsQuery: Database.Statement<[{ sourceId: number; targetId: number }], { parentFolderId: number | null; targetOrder: number; prevOrder: number | null }>
+  private readonly getMoveAfterBoundsQuery: Database.Statement<[{ sourceId: number; targetId: number }], { parentFolderId: number | null; targetOrder: number; nextOrder: number | null }>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -33,70 +33,70 @@ export class FolderRepository {
     this.getFolderByIdQuery = this.db.prepare(`
       SELECT ${SELECT_COLUMNS}
       FROM folders
-      WHERE id = ?
+      WHERE id = :folderId
     `)
 
     this.createFolderQuery = this.db.prepare(`
       INSERT INTO folders (name, parent_folder_id, custom_order)
-      VALUES (?, ?, (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM folders))
+      VALUES (:name, :parentFolderId, (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM folders))
       RETURNING ${SELECT_COLUMNS}
     `)
 
     this.deleteFolderQuery = this.db.prepare(`
       DELETE FROM folders
-      WHERE id = ?
+      WHERE id = :folderId
     `)
 
     this.renameFolderQuery = this.db.prepare(`
       UPDATE folders
-      SET name = ?
-      WHERE id = ?
+      SET name = :name
+      WHERE id = :folderId
       RETURNING ${SELECT_COLUMNS}
     `)
 
     this.moveToFolderQuery = this.db.prepare(`
       UPDATE folders
-      SET parent_folder_id = ?,
-        custom_order = (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM folders WHERE parent_folder_id IS ?)
-      WHERE id = ?
+      SET parent_folder_id = :parentFolderId,
+        custom_order = (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM folders WHERE parent_folder_id IS :parentFolderId)
+      WHERE id = :folderId
       RETURNING ${SELECT_COLUMNS}
     `)
 
     this.listFolderNamesQuery = this.db.prepare(`
       SELECT name
       FROM folders
-      WHERE COALESCE(parent_folder_id, 0) = COALESCE(?, 0)
+      WHERE COALESCE(parent_folder_id, 0) = COALESCE(:parentFolderId, 0)
     `)
 
     this.updateCustomOrderQuery = this.db.prepare(`
       UPDATE folders
-      SET custom_order = ?
-      WHERE id = ?
+      SET custom_order = :customOrder
+      WHERE id = :folderId
       RETURNING ${SELECT_COLUMNS}
     `)
 
-    this.getMoveBoundsQuery = this.db.prepare(`
-      WITH target AS (SELECT custom_order, parent_folder_id FROM folders WHERE id = ?)
+    this.getMoveBeforeBoundsQuery = this.db.prepare(`
+      WITH target AS (SELECT custom_order, parent_folder_id FROM folders WHERE id = :targetId)
       SELECT
         target.parent_folder_id AS parentFolderId,
         target.custom_order AS targetOrder,
         (
           SELECT MAX(custom_order)
           FROM folders
-          WHERE parent_folder_id IS target.parent_folder_id AND custom_order < target.custom_order AND id != ?
+          WHERE parent_folder_id IS target.parent_folder_id AND custom_order < target.custom_order AND id != :sourceId
         ) AS prevOrder
       FROM target
     `)
 
     this.getMoveAfterBoundsQuery = this.db.prepare(`
-      WITH target AS (SELECT custom_order, parent_folder_id FROM folders WHERE id = ?)
+      WITH target AS (SELECT custom_order, parent_folder_id FROM folders WHERE id = :targetId)
       SELECT
         target.parent_folder_id AS parentFolderId,
         target.custom_order AS targetOrder,
         (
           SELECT MIN(custom_order)
           FROM folders
-          WHERE parent_folder_id IS target.parent_folder_id AND custom_order > target.custom_order AND id != ?
+          WHERE parent_folder_id IS target.parent_folder_id AND custom_order > target.custom_order AND id != :sourceId
         ) AS nextOrder
       FROM target
     `)
@@ -107,7 +107,7 @@ export class FolderRepository {
   }
 
   getFolderById(folderId: number): FolderRecord | undefined {
-    return this.getFolderByIdQuery.get(folderId)
+    return this.getFolderByIdQuery.get({ folderId })
   }
 
   createFolder(name: string | null = null, parentFolderId: number | null = null): FolderRecord {
@@ -117,11 +117,11 @@ export class FolderRepository {
 
     const trimmed = name?.trim()
     const folderName = trimmed ? trimmed : this.getNextDefaultFolderName(parentFolderId)
-    return this.createFolderQuery.get(folderName, parentFolderId)!
+    return this.createFolderQuery.get({ name: folderName, parentFolderId })!
   }
 
   deleteFolder(folderId: number): void {
-    this.deleteFolderQuery.run(folderId)
+    this.deleteFolderQuery.run({ folderId })
   }
 
   renameFolder(folderId: number, name: string): FolderRecord {
@@ -130,7 +130,7 @@ export class FolderRepository {
       throw new Error('Folder name cannot be empty')
     }
 
-    return this.renameFolderQuery.get(trimmed, folderId)!
+    return this.renameFolderQuery.get({ folderId, name: trimmed })!
   }
 
   moveToFolder(folderId: number, parentFolderId: number | null): FolderRecord {
@@ -149,25 +149,25 @@ export class FolderRepository {
       }
     }
 
-    return this.moveToFolderQuery.get(parentFolderId, parentFolderId, folderId)!
+    return this.moveToFolderQuery.get({ folderId, parentFolderId })!
   }
 
   moveBefore(sourceId: number, targetId: number): FolderRecord | undefined {
-    const { parentFolderId, targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
+    const { parentFolderId, targetOrder, prevOrder } = this.getMoveBeforeBoundsQuery.get({ sourceId, targetId })!
     this.moveToFolder(sourceId, parentFolderId)
     const newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1
-    return this.updateCustomOrderQuery.get(newOrder, sourceId)
+    return this.updateCustomOrderQuery.get({ folderId: sourceId, customOrder: newOrder })
   }
 
   moveAfter(sourceId: number, targetId: number): FolderRecord | undefined {
-    const { parentFolderId, targetOrder, nextOrder } = this.getMoveAfterBoundsQuery.get(targetId, sourceId)!
+    const { parentFolderId, targetOrder, nextOrder } = this.getMoveAfterBoundsQuery.get({ sourceId, targetId })!
     this.moveToFolder(sourceId, parentFolderId)
     const newOrder = nextOrder !== null ? (targetOrder + nextOrder) / 2 : targetOrder + 1
-    return this.updateCustomOrderQuery.get(newOrder, sourceId)
+    return this.updateCustomOrderQuery.get({ folderId: sourceId, customOrder: newOrder })
   }
 
   private getNextDefaultFolderName(parentFolderId: number | null): string {
-    const names = this.listFolderNamesQuery.all(parentFolderId).map((row) => row.name)
+    const names = this.listFolderNamesQuery.all({ parentFolderId }).map((row) => row.name)
     let maxSuffix = 0
 
     for (const name of names) {

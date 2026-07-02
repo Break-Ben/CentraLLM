@@ -13,16 +13,16 @@ const SELECT_COLUMNS = `
 
 export class ChatRepository {
   private readonly listChatsQuery: Database.Statement<[], ChatRecord>
-  private readonly getChatByIdQuery: Database.Statement<[number], ChatRecord>
-  private readonly getChatByLocationQuery: Database.Statement<[string, string], ChatRecord>
+  private readonly getChatByIdQuery: Database.Statement<[{ id: number }], ChatRecord>
+  private readonly getChatByLocationQuery: Database.Statement<[{ chatId: string; providerId: string }], ChatRecord>
   private readonly getMostRecentChatQuery: Database.Statement<[], ChatRecord>
-  private readonly upsertChatQuery: Database.Statement<[string, string, string, number, number | null], ChatRecord>
-  private readonly removeChatQuery: Database.Statement<[number], void>
-  private readonly updateLastOpenedQuery: Database.Statement<[number, number], ChatRecord>
-  private readonly moveToFolderQuery: Database.Statement<[number | null, number | null, number], ChatRecord>
-  private readonly updateCustomOrderQuery: Database.Statement<[number, number], ChatRecord>
-  private readonly getMoveBoundsQuery: Database.Statement<[number, number], { folderId: number | null; targetOrder: number; prevOrder: number | null }>
-  private readonly getMoveAfterBoundsQuery: Database.Statement<[number, number], { folderId: number | null; targetOrder: number; nextOrder: number | null }>
+  private readonly upsertChatQuery: Database.Statement<[{ chatId: string; providerId: string; title: string; lastOpenedAt: number; folderId: number | null }], ChatRecord>
+  private readonly removeChatQuery: Database.Statement<[{ id: number }], void>
+  private readonly updateLastOpenedQuery: Database.Statement<[{ id: number; lastOpenedAt: number }], ChatRecord>
+  private readonly moveToFolderQuery: Database.Statement<[{ id: number; folderId: number | null }], ChatRecord>
+  private readonly updateCustomOrderQuery: Database.Statement<[{ id: number; customOrder: number }], ChatRecord>
+  private readonly getMoveBeforeBoundsQuery: Database.Statement<[{ sourceId: number; targetId: number }], { folderId: number | null; targetOrder: number; prevOrder: number | null }>
+  private readonly getMoveAfterBoundsQuery: Database.Statement<[{ sourceId: number; targetId: number }], { folderId: number | null; targetOrder: number; nextOrder: number | null }>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -35,13 +35,13 @@ export class ChatRepository {
     this.getChatByIdQuery = this.db.prepare(`
       SELECT ${SELECT_COLUMNS}
       FROM chats
-      WHERE id = ?
+      WHERE id = :id
     `)
 
     this.getChatByLocationQuery = this.db.prepare(`
       SELECT ${SELECT_COLUMNS}
       FROM chats
-      WHERE provider_id = ? AND chat_id = ?
+      WHERE provider_id = :providerId AND chat_id = :chatId
     `)
 
     this.getMostRecentChatQuery = this.db.prepare(`
@@ -53,7 +53,7 @@ export class ChatRepository {
 
     this.upsertChatQuery = this.db.prepare(`
       INSERT INTO chats (provider_id, chat_id, title, last_opened_at, folder_id, custom_order)
-      VALUES (?, ?, ?, ?, ?, (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM chats))
+      VALUES (:providerId, :chatId, :title, :lastOpenedAt, :folderId, (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM chats))
       ON CONFLICT(provider_id, chat_id) DO UPDATE SET
         title = CASE WHEN excluded.title <> '' THEN excluded.title ELSE chats.title END,
         last_opened_at = excluded.last_opened_at
@@ -62,53 +62,53 @@ export class ChatRepository {
 
     this.removeChatQuery = this.db.prepare(`
       DELETE FROM chats
-      WHERE id = ?
+      WHERE id = :id
     `)
 
     this.updateLastOpenedQuery = this.db.prepare(`
       UPDATE chats
-      SET last_opened_at = ?
-      WHERE id = ?
+      SET last_opened_at = :lastOpenedAt
+      WHERE id = :id
       RETURNING ${SELECT_COLUMNS}
     `)
 
     this.moveToFolderQuery = this.db.prepare(`
       UPDATE chats
-      SET folder_id = ?,
-        custom_order = (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM chats WHERE folder_id IS ?)
-      WHERE id = ?
+      SET folder_id = :folderId,
+        custom_order = (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM chats WHERE folder_id IS :folderId)
+      WHERE id = :id
       RETURNING ${SELECT_COLUMNS}
     `)
 
     this.updateCustomOrderQuery = this.db.prepare(`
       UPDATE chats
-      SET custom_order = ?
-      WHERE id = ?
+      SET custom_order = :customOrder
+      WHERE id = :id
       RETURNING ${SELECT_COLUMNS}
     `)
 
-    this.getMoveBoundsQuery = this.db.prepare(`
-      WITH target AS (SELECT custom_order, folder_id FROM chats WHERE id = ?)
+    this.getMoveBeforeBoundsQuery = this.db.prepare(`
+      WITH target AS (SELECT custom_order, folder_id FROM chats WHERE id = :targetId)
       SELECT
         target.folder_id AS folderId,
         target.custom_order AS targetOrder,
         (
           SELECT MAX(custom_order)
           FROM chats
-          WHERE folder_id IS target.folder_id AND custom_order < target.custom_order AND id != ?
+          WHERE folder_id IS target.folder_id AND custom_order < target.custom_order AND id != :sourceId
         ) AS prevOrder
       FROM target
     `)
 
     this.getMoveAfterBoundsQuery = this.db.prepare(`
-      WITH target AS (SELECT custom_order, folder_id FROM chats WHERE id = ?)
+      WITH target AS (SELECT custom_order, folder_id FROM chats WHERE id = :targetId)
       SELECT
         target.folder_id AS folderId,
         target.custom_order AS targetOrder,
         (
           SELECT MIN(custom_order)
           FROM chats
-          WHERE folder_id IS target.folder_id AND custom_order > target.custom_order AND id != ?
+          WHERE folder_id IS target.folder_id AND custom_order > target.custom_order AND id != :sourceId
         ) AS nextOrder
       FROM target
     `)
@@ -119,11 +119,11 @@ export class ChatRepository {
   }
 
   getChatById(id: number): ChatRecord | undefined {
-    return this.getChatByIdQuery.get(id)
+    return this.getChatByIdQuery.get({ id })
   }
 
   getChatByLocation(location: ChatLocation): ChatRecord | undefined {
-    return this.getChatByLocationQuery.get(location.providerId, location.chatId)
+    return this.getChatByLocationQuery.get({ chatId: location.chatId, providerId: location.providerId })
   }
 
   getMostRecentChat(): ChatRecord | undefined {
@@ -131,34 +131,39 @@ export class ChatRepository {
   }
 
   upsertChat(location: ChatLocation, title?: string, folderId: number | null = null): ChatRecord {
-    const now = Date.now()
-    return this.upsertChatQuery.get(location.providerId, location.chatId, title ?? '', now, folderId)!
+    return this.upsertChatQuery.get({
+      chatId: location.chatId,
+      providerId: location.providerId,
+      title: title ?? '',
+      lastOpenedAt: Date.now(),
+      folderId
+    })!
   }
 
   removeChat(id: number): void {
-    this.removeChatQuery.run(id)
+    this.removeChatQuery.run({ id })
   }
 
   updateLastOpened(id: number): ChatRecord | undefined {
-    return this.updateLastOpenedQuery.get(Date.now(), id)
+    return this.updateLastOpenedQuery.get({ id, lastOpenedAt: Date.now() })
   }
 
   moveToFolder(id: number, folderId: number | null): ChatRecord | undefined {
-    return this.moveToFolderQuery.get(folderId, folderId, id)
+    return this.moveToFolderQuery.get({ id, folderId })
   }
 
   moveBefore(sourceId: number, targetId: number): ChatRecord | undefined {
-    const { folderId, targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
+    const { folderId, targetOrder, prevOrder } = this.getMoveBeforeBoundsQuery.get({ sourceId, targetId })!
     this.moveToFolder(sourceId, folderId)
     const newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1
-    return this.updateCustomOrderQuery.get(newOrder, sourceId)
+    return this.updateCustomOrderQuery.get({ id: sourceId, customOrder: newOrder })
   }
 
   moveAfter(sourceId: number, targetId: number): ChatRecord | undefined {
-    const { folderId, targetOrder, nextOrder } = this.getMoveAfterBoundsQuery.get(targetId, sourceId)!
+    const { folderId, targetOrder, nextOrder } = this.getMoveAfterBoundsQuery.get({ sourceId, targetId })!
     this.moveToFolder(sourceId, folderId)
     const newOrder = nextOrder !== null ? (targetOrder + nextOrder) / 2 : targetOrder + 1
-    return this.updateCustomOrderQuery.get(newOrder, sourceId)
+    return this.updateCustomOrderQuery.get({ id: sourceId, customOrder: newOrder })
   }
 
   private ensureSchema(): void {
