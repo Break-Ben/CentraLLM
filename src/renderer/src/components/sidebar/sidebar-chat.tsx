@@ -58,7 +58,7 @@ export function SidebarChat({ chat, depth, parentFolderId, isCustomSort }: Sideb
         }
       })
     )
-  }, [chat.id, parentFolderId, isCustomSort, moveBefore])
+  }, [chat.id, parentFolderId, isCustomSort, moveBefore, moveAfter])
 
   return (
     <SidebarMenuItem

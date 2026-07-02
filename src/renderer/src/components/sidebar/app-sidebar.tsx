@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '@/components/ui/sidebar'
 import { FolderPlus, House, MessageSquarePlus, MessagesSquare, Settings } from 'lucide-react'
 import { useNavigationStore } from '@/stores/navigation-store'
@@ -13,6 +13,10 @@ import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { ChatProviderIcon } from '@/components/chat-provider-icon'
 import { CHAT_PROVIDERS, ChatProviderId, getChatProvider } from '@shared/chat'
+import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
+import { DragItemData } from '@/constants/directory'
+import { cn } from '@/lib/utils'
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
@@ -21,8 +25,12 @@ export function AppSidebar(): React.JSX.Element {
   const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
   const sortingOrder = useAppStateStore((state) => state.sortingOrder)
   const { set } = useAppStateStore((state) => state.actions)
+  const { moveToFolder: moveFolderToFolder } = useFolderStore((state) => state.actions)
+  const { moveToFolder: moveChatToFolder } = useChatStore((state) => state.actions)
 
   const [prevFolders, setPrevFolders] = useState(folders)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const groupRef = useRef<HTMLDivElement | null>(null)
 
   if (folders !== prevFolders) {
     setPrevFolders(folders)
@@ -34,6 +42,39 @@ export function AppSidebar(): React.JSX.Element {
       void set('expandedFolderIds', [...expandedFolderIds, ...newlyCreatedIds])
     }
   }
+
+  useEffect(() => {
+    const element = groupRef.current
+    if (!element) {
+      return
+    }
+
+    const isOverBackground = (location: DragLocationHistory) => {
+      const { clientX, clientY } = location.current.input
+      return !document.elementFromPoint(clientX, clientY)?.closest('li')
+    }
+
+    return dropTargetForElements({
+      element,
+      canDrop: ({ source }) => (source.data.type === 'chat' || source.data.type === 'folder') && source.data.parentFolderId !== null,
+      onDragEnter: ({ location }) => setIsDragOver(isOverBackground(location)),
+      onDrag: ({ location }) => setIsDragOver(isOverBackground(location)),
+      onDragLeave: () => setIsDragOver(false),
+      onDrop: ({ source, location }) => {
+        if (!isOverBackground(location)) {
+          return
+        }
+
+        setIsDragOver(false)
+        const src = source.data as DragItemData
+        if (src.type === 'chat') {
+          void moveChatToFolder(src.id, null)
+        } else if (src.type === 'folder') {
+          void moveFolderToFolder(src.id, null)
+        }
+      }
+    })
+  }, [moveChatToFolder, moveFolderToFolder])
 
   const isCustomSort = sortingOrder === 'custom'
   const items = useFlatDirectory(sortingOrder, expandedFolderIds)
@@ -64,8 +105,8 @@ export function AppSidebar(): React.JSX.Element {
 
       <SidebarContent>
         <ContextMenu>
-          <ContextMenuTrigger className="flex-1">
-            <SidebarGroup>
+          <ContextMenuTrigger className="flex flex-1 h-full">
+            <SidebarGroup ref={groupRef} className={cn(isDragOver && 'bg-sidebar-accent')}>
               <SidebarGroupLabel>Chats</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
