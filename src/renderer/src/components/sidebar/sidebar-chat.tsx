@@ -43,8 +43,7 @@ export function SidebarChat({ chat, depth, parentFolderId, nextSiblingId, isCust
       }),
       dropTargetForElements({
         element,
-        // TEMP: Chats only reorder against siblings in the same folder.
-        canDrop: ({ source }) => isCustomSort && source.data.type === 'chat' && source.data.id !== chat.id && (source.data.parentFolderId as number | null) === parentFolderId,
+        canDrop: ({ source }) => isCustomSort && source.data.type === 'chat' && source.data.id !== chat.id,
         getData: ({ input, element }) => attachClosestEdge({ type: 'chat', id: chat.id }, { input, element, allowedEdges: ['top', 'bottom'] }),
         onDragEnter: ({ self }) => setClosestEdge(extractClosestEdge(self.data)),
         onDrag: ({ self }) => setClosestEdge(extractClosestEdge(self.data)),

@@ -16,11 +16,11 @@ export class FolderRepository {
   private readonly createFolderQuery: Database.Statement<[string, number | null], FolderRecord>
   private readonly deleteFolderQuery: Database.Statement<[number], void>
   private readonly renameFolderQuery: Database.Statement<[string, number], FolderRecord>
-  private readonly moveToFolderQuery: Database.Statement<[number | null, number], FolderRecord>
+  private readonly moveToFolderQuery: Database.Statement<[number | null, number | null, number], FolderRecord>
   private readonly listFolderNamesQuery: Database.Statement<[number | null], { name: string }>
   private readonly updateCustomOrderQuery: Database.Statement<[number, number], FolderRecord>
   private readonly getMaxCustomOrderQuery: Database.Statement<[number, number], { maxOrder: number }>
-  private readonly getMoveBoundsQuery: Database.Statement<[number, number], { targetOrder: number; prevOrder: number | null }>
+  private readonly getMoveBoundsQuery: Database.Statement<[number, number], { parentFolderId: number | null; targetOrder: number; prevOrder: number | null }>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -56,7 +56,8 @@ export class FolderRepository {
 
     this.moveToFolderQuery = this.db.prepare(`
       UPDATE folders
-      SET parent_folder_id = ?
+      SET parent_folder_id = ?,
+        custom_order = (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM folders WHERE parent_folder_id IS ?)
       WHERE id = ?
       RETURNING ${SELECT_COLUMNS}
     `)
@@ -83,6 +84,7 @@ export class FolderRepository {
     this.getMoveBoundsQuery = this.db.prepare(`
       WITH target AS (SELECT custom_order, parent_folder_id FROM folders WHERE id = ?)
       SELECT
+        target.parent_folder_id AS parentFolderId,
         target.custom_order AS targetOrder,
         (
           SELECT MAX(custom_order)
@@ -140,7 +142,7 @@ export class FolderRepository {
       }
     }
 
-    return this.moveToFolderQuery.get(parentFolderId, folderId)!
+    return this.moveToFolderQuery.get(parentFolderId, parentFolderId, folderId)!
   }
 
   moveBefore(sourceId: number, targetId: number | null): FolderRecord | undefined {
@@ -148,7 +150,8 @@ export class FolderRepository {
       const { maxOrder } = this.getMaxCustomOrderQuery.get(sourceId, sourceId)!
       return this.updateCustomOrderQuery.get(maxOrder + 1, sourceId)
     }
-    const { targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
+    const { parentFolderId, targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
+    this.moveToFolder(sourceId, parentFolderId)
     const newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1
     return this.updateCustomOrderQuery.get(newOrder, sourceId)
   }

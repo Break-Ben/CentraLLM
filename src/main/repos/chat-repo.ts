@@ -19,10 +19,10 @@ export class ChatRepository {
   private readonly upsertChatQuery: Database.Statement<[string, string, string, number, number | null], ChatRecord>
   private readonly removeChatQuery: Database.Statement<[number], void>
   private readonly updateLastOpenedQuery: Database.Statement<[number, number], ChatRecord>
-  private readonly moveToFolderQuery: Database.Statement<[number | null, number], ChatRecord>
+  private readonly moveToFolderQuery: Database.Statement<[number | null, number | null, number], ChatRecord>
   private readonly updateCustomOrderQuery: Database.Statement<[number, number], ChatRecord>
   private readonly getMaxCustomOrderQuery: Database.Statement<[number, number], { maxOrder: number }>
-  private readonly getMoveBoundsQuery: Database.Statement<[number, number], { targetOrder: number; prevOrder: number | null }>
+  private readonly getMoveBoundsQuery: Database.Statement<[number, number], { folderId: number | null; targetOrder: number; prevOrder: number | null }>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -74,7 +74,8 @@ export class ChatRepository {
 
     this.moveToFolderQuery = this.db.prepare(`
       UPDATE chats
-      SET folder_id = ?
+      SET folder_id = ?,
+        custom_order = (SELECT COALESCE(MAX(custom_order), 0) + 1 FROM chats WHERE folder_id IS ?)
       WHERE id = ?
       RETURNING ${SELECT_COLUMNS}
     `)
@@ -95,6 +96,7 @@ export class ChatRepository {
     this.getMoveBoundsQuery = this.db.prepare(`
       WITH target AS (SELECT custom_order, folder_id FROM chats WHERE id = ?)
       SELECT
+        target.folder_id AS folderId,
         target.custom_order AS targetOrder,
         (
           SELECT MAX(custom_order)
@@ -135,7 +137,7 @@ export class ChatRepository {
   }
 
   moveToFolder(id: number, folderId: number | null): ChatRecord | undefined {
-    return this.moveToFolderQuery.get(folderId, id)
+    return this.moveToFolderQuery.get(folderId, folderId, id)
   }
 
   moveBefore(sourceId: number, targetId: number | null): ChatRecord | undefined {
@@ -143,7 +145,8 @@ export class ChatRepository {
       const { maxOrder } = this.getMaxCustomOrderQuery.get(sourceId, sourceId)!
       return this.updateCustomOrderQuery.get(maxOrder + 1, sourceId)
     }
-    const { targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
+    const { folderId, targetOrder, prevOrder } = this.getMoveBoundsQuery.get(targetId, sourceId)!
+    this.moveToFolder(sourceId, folderId)
     const newOrder = prevOrder !== null ? (prevOrder + targetOrder) / 2 : targetOrder - 1
     return this.updateCustomOrderQuery.get(newOrder, sourceId)
   }

@@ -81,12 +81,10 @@ export function SidebarFolder({ folder, depth, parentFolderId, nextSiblingId, is
             return
           }
 
-          // TEMP: Folders only reorder against siblings sharing the same parent; otherwise it's a move-into.
-          const sameParent = src.parentFolderId === parentFolderId
           const operation = extractInstruction(self.data)?.operation
-          if (sameParent && operation === 'reorder-before') {
+          if (operation === 'reorder-before') {
             void moveFolderBefore(src.id, folder.id)
-          } else if (sameParent && operation === 'reorder-after') {
+          } else if (operation === 'reorder-after') {
             void moveFolderBefore(src.id, nextSiblingId)
           } else {
             void moveFolderToFolder(src.id, folder.id)
@@ -101,8 +99,7 @@ export function SidebarFolder({ folder, depth, parentFolderId, nextSiblingId, is
         return
       }
 
-      const sameParent = src.parentFolderId === parentFolderId
-      const operation = sameParent ? extractInstruction(self.data)?.operation : 'combine'
+      const operation = extractInstruction(self.data)?.operation
       if (operation === 'reorder-before') {
         setDropIndicator('top')
       } else if (operation === 'reorder-after') {
