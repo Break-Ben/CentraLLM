@@ -26,7 +26,7 @@ export class PreferencesRepository {
 
   getAll(): Preferences {
     const rows = this.getAllQuery.all()
-    const stored = Object.fromEntries(rows.map((r) => [r.key, JSON.parse(r.value)]))
+    const stored = Object.fromEntries(rows.map((row) => [row.key, JSON.parse(row.value)]))
     return { ...DEFAULTS, ...stored }
   }
 

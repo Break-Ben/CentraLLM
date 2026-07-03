@@ -13,9 +13,12 @@ export function useFlatDirectory(sortingOrder: SortingOrder, expandedFolderIds: 
     const expandedSet = new Set(expandedFolderIds)
     const items: FlatDirectoryItem[] = []
 
+    const foldersByParent = Map.groupBy(folders, (folder) => folder.parentFolderId)
+    const chatsByFolder = Map.groupBy(chats, (chat) => chat.folderId)
+
     function walk(parentFolderId: number | null, depth: number): void {
-      const levelFolders = folders.filter((folder) => folder.parentFolderId === parentFolderId)
-      const levelChats = chats.filter((chat) => chat.folderId === parentFolderId)
+      const levelFolders = foldersByParent.get(parentFolderId) ?? []
+      const levelChats = chatsByFolder.get(parentFolderId) ?? []
       const { folders: sortedFolders, chats: sortedChats } = sortDirectoryLevel(levelFolders, levelChats, sortingOrder)
 
       sortedFolders.forEach((folder) => {

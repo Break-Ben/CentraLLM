@@ -28,8 +28,7 @@ export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: S
   const itemRef = useRef<HTMLLIElement | null>(null)
   const [dropIndicator, setDropIndicator] = useState<'inside' | 'top' | 'bottom' | null>(null)
 
-  const folders = useFolderStore((state) => state.folders)
-  const { moveToFolder: moveFolderToFolder, moveBefore, moveAfter } = useFolderStore((state) => state.actions)
+  const { moveToFolder: moveFolderToFolder, moveBefore, moveAfter, isDescendant } = useFolderStore((state) => state.actions)
   const { moveToFolder: moveChatToFolder } = useChatStore((state) => state.actions)
 
   const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
@@ -58,7 +57,7 @@ export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: S
           if (source.data.type === 'folder' && source.data.id === folder.id) {
             return false
           }
-          if (source.data.type === 'folder' && isDescendant(source.data.id as number, folder.id, folders)) {
+          if (source.data.type === 'folder' && isDescendant(source.data.id as number, folder.id)) {
             return false
           }
           return source.data.type === 'chat' || source.data.type === 'folder'
@@ -107,7 +106,7 @@ export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: S
         setDropIndicator('inside')
       }
     }
-  }, [folder.id, parentFolderId, isCustomSort, folders, moveChatToFolder, moveFolderToFolder, moveBefore, moveAfter])
+  }, [folder.id, parentFolderId, isCustomSort, moveChatToFolder, moveFolderToFolder, moveBefore, moveAfter, isDescendant])
 
   return (
     <SidebarMenuItem
@@ -218,16 +217,4 @@ function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenu
       </ContextMenuItem>
     </ContextMenuContent>
   )
-}
-
-function isDescendant(ancestorId: number, folderId: number, folders: FolderRecord[]): boolean {
-  const foldersById = new Map(folders.map((folder) => [folder.id, folder]))
-  let current = foldersById.get(folderId)?.parentFolderId ?? null
-  while (current !== null) {
-    if (current === ancestorId) {
-      return true
-    }
-    current = foldersById.get(current)?.parentFolderId ?? null
-  }
-  return false
 }
