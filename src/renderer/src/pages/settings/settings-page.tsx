@@ -1,4 +1,4 @@
-import { ThemeSelector } from '@/components/settings/theme-selector'
+import { ThemeSelector } from '@/pages/settings/theme-selector'
 
 export function SettingsPage(): React.JSX.Element {
   return (
