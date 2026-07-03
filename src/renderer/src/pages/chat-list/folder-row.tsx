@@ -4,7 +4,11 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { attachInstruction, extractInstruction } from '@atlaskit/pragmatic-drag-and-drop-hitbox/list-item'
 import { TableCell, TableRow } from '@/components/ui/table'
+import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { InlineEdit } from '@/components/ui/inline-edit'
+import { SidebarFolderContextMenu } from '@/components/context-menus/folder-context-menu'
 import { useFolderStore } from '@/stores/folder-store'
+import { useUiStore } from '@/stores/ui-store'
 import { FolderRecord } from '@shared/folder'
 import { DragItemData, DropFolderData } from '@/constants/directory'
 import { cn } from '@/lib/utils'
@@ -23,6 +27,11 @@ export function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropIt
   const rowRef = useRef<HTMLTableRowElement | null>(null)
   const [dropIndicator, setDropIndicator] = useState<'inside' | 'top' | 'bottom' | null>(null)
   const isDescendant = useFolderStore((state) => state.actions.isDescendant)
+
+  const editingElement = useUiStore((state) => state.editingElement)
+  const { startEditing, stopEditing } = useUiStore((state) => state.actions)
+
+  const isEditing = editingElement?.type === 'row-folder' && editingElement.id === folder.id
 
   useEffect(() => {
     const element = rowRef.current
@@ -105,24 +114,37 @@ export function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropIt
   }, [folder.id, folder.parentFolderId, isCustomSort, nextFolderId, onDropItem, onMoveAfter, onMoveBefore, isDescendant])
 
   return (
-    <TableRow
-      ref={rowRef}
-      className={cn(
-        'cursor-default select-none',
-        dropIndicator === 'inside' && 'bg-accent/60 text-accent-foreground',
-        dropIndicator === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]',
-        dropIndicator === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]'
-      )}
-      onDoubleClick={onOpen}
-    >
-      <TableCell>
-        <span className="inline-flex items-center gap-2">
-          <Folder className="size-4" />
-          <span>{folder.name}</span>
-        </span>
-      </TableCell>
-      <TableCell className="text-muted-foreground">-</TableCell>
-      <TableCell className="text-muted-foreground">-</TableCell>
-    </TableRow>
+    <ContextMenu>
+      <ContextMenuTrigger className="contents">
+        <TableRow
+          ref={rowRef}
+          className={cn(
+            'cursor-default select-none',
+            dropIndicator === 'inside' && 'bg-accent/60 text-accent-foreground',
+            dropIndicator === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]',
+            dropIndicator === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]'
+          )}
+          onDoubleClick={isEditing ? undefined : onOpen}
+        >
+          <TableCell>
+            <span className="inline-flex items-center gap-2">
+              <Folder className="size-4" />
+              <InlineEdit
+                value={folder.name}
+                isEditing={isEditing}
+                onSave={async (next) => {
+                  await window.api.folders.rename(folder.id, next)
+                }}
+                onClose={stopEditing}
+                aria-label={`Rename folder ${folder.name}`}
+              />
+            </span>
+          </TableCell>
+          <TableCell className="text-muted-foreground">-</TableCell>
+          <TableCell className="text-muted-foreground">-</TableCell>
+        </TableRow>
+      </ContextMenuTrigger>
+      <SidebarFolderContextMenu folder={folder} onRename={(folderId) => startEditing({ type: 'row-folder', id: folderId })} />
+    </ContextMenu>
   )
 }

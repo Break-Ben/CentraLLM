@@ -1,23 +1,34 @@
 import { useEffect, useRef, useState, KeyboardEvent } from 'react'
 
 interface InlineEditProps extends Omit<React.ComponentProps<'input'>, 'value'> {
-  initialValue: string
+  value: string
+  isEditing: boolean
   onSave: (next: string) => Promise<void> | void
   onClose: () => void
 }
 
-export function InlineEdit({ initialValue, onSave, onClose, ...props }: InlineEditProps) {
-  const [draft, setDraft] = useState(initialValue)
+export function InlineEdit({ value, isEditing, onSave, onClose, ...props }: InlineEditProps) {
+  const [draft, setDraft] = useState(value)
+  const [prevIsEditing, setPrevIsEditing] = useState(isEditing)
   const inputRef = useRef<HTMLInputElement>(null)
   const isSavingRef = useRef(false)
 
+  if (isEditing !== prevIsEditing) {
+    setPrevIsEditing(isEditing)
+    setDraft(value)
+  }
+
   useEffect(() => {
+    if (!isEditing) {
+      return
+    }
+
     const id = requestAnimationFrame(() => {
       inputRef.current?.focus()
       inputRef.current?.select()
     })
     return () => cancelAnimationFrame(id)
-  }, [])
+  }, [isEditing])
 
   const commit = async () => {
     if (isSavingRef.current) {
@@ -25,7 +36,7 @@ export function InlineEdit({ initialValue, onSave, onClose, ...props }: InlineEd
     }
 
     const next = draft.trim()
-    if (!next || next === initialValue.trim()) {
+    if (!next || next === value.trim()) {
       onClose()
       return
     }
@@ -49,6 +60,10 @@ export function InlineEdit({ initialValue, onSave, onClose, ...props }: InlineEd
       e.preventDefault()
       onClose()
     }
+  }
+
+  if (!isEditing) {
+    return <span>{value}</span>
   }
 
   return (

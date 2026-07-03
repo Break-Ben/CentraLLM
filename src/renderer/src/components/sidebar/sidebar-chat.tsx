@@ -7,10 +7,10 @@ import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { ChatRecord, getChatDisplayName } from '@shared/chat'
 import { ChatProviderIcon } from '@/components/chat-provider-icon'
-import { Trash2 } from 'lucide-react'
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { DragItemData } from '@/constants/directory'
 import { cn } from '@/lib/utils'
+import { SidebarChatContextMenu } from '@/components/context-menus/chat-context-menu'
 
 interface SidebarChatProps {
   chat: ChatRecord
@@ -83,20 +83,5 @@ export function SidebarChat({ chat, depth, parentFolderId, isCustomSort }: Sideb
         <SidebarChatContextMenu chat={chat} />
       </ContextMenu>
     </SidebarMenuItem>
-  )
-}
-
-interface SidebarChatContextMenuProps {
-  chat: ChatRecord
-}
-
-function SidebarChatContextMenu({ chat }: SidebarChatContextMenuProps): React.JSX.Element {
-  return (
-    <ContextMenuContent>
-      <ContextMenuItem variant="destructive" onClick={() => void window.api.chats.remove(chat.id)}>
-        <Trash2 />
-        <span>Remove</span>
-      </ContextMenuItem>
-    </ContextMenuContent>
   )
 }

@@ -4,6 +4,8 @@ import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-d
 import { attachClosestEdge, extractClosestEdge, Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { SidebarChatContextMenu } from '@/components/context-menus/chat-context-menu'
 import { getChatDisplayName, ChatRecord, getChatProvider } from '@shared/chat'
 import { formatDate } from '@shared/preferences'
 import { DragItemData } from '@/constants/directory'
@@ -54,20 +56,29 @@ export function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore, 
   }, [chat.id, chat.folderId, isCustomSort, nextChatId, onMoveBefore, onMoveAfter])
 
   return (
-    <TableRow ref={rowRef} className={cn('cursor-default select-none', closestEdge === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]')} onDoubleClick={onOpen}>
-      <TableCell>
-        <span className="inline-flex items-center gap-2">
-          <ChatProviderIcon providerId={chat.providerId} />
-          <span>{getChatDisplayName(chat)}</span>
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className="inline-flex items-center gap-2">
-          <ChatProviderIcon providerId={chat.providerId} />
-          <span>{getChatProvider(chat.providerId).name}</span>
-        </span>
-      </TableCell>
-      <TableCell>{formatDate(chat.lastOpenedAt)}</TableCell>
-    </TableRow>
+    <ContextMenu>
+      <ContextMenuTrigger className="contents">
+        <TableRow
+          ref={rowRef}
+          className={cn('cursor-default select-none', closestEdge === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]')}
+          onDoubleClick={onOpen}
+        >
+          <TableCell>
+            <span className="inline-flex items-center gap-2">
+              <ChatProviderIcon providerId={chat.providerId} />
+              <span>{getChatDisplayName(chat)}</span>
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="inline-flex items-center gap-2">
+              <ChatProviderIcon providerId={chat.providerId} />
+              <span>{getChatProvider(chat.providerId).name}</span>
+            </span>
+          </TableCell>
+          <TableCell>{formatDate(chat.lastOpenedAt)}</TableCell>
+        </TableRow>
+      </ContextMenuTrigger>
+      <SidebarChatContextMenu chat={chat} />
+    </ContextMenu>
   )
 }

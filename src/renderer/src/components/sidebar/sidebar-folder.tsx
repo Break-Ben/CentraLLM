@@ -2,20 +2,18 @@ import { useEffect, useRef, useState } from 'react'
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { attachInstruction, extractInstruction } from '@atlaskit/pragmatic-drag-and-drop-hitbox/list-item'
-import { ChevronRight, Folder, FolderPlus, MessageSquarePlus, Pencil, Trash2 } from 'lucide-react'
+import { ChevronRight, Folder } from 'lucide-react'
 import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar'
 import { InlineEdit } from '@/components/ui/inline-edit'
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { FolderRecord } from '@shared/folder'
 import { useAppStateStore } from '@/stores/app-state-store'
 import { useUiStore } from '@/stores/ui-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useFolderStore } from '@/stores/folder-store'
-import { ChatProviderIcon } from '@/components/chat-provider-icon'
-import { useNavigationStore } from '@/stores/navigation-store'
-import { getChatProvider, ChatProviderId, CHAT_PROVIDERS } from '@shared/chat'
 import { DragItemData, DropFolderData } from '@/constants/directory'
 import { cn } from '@/lib/utils'
+import { SidebarFolderContextMenu } from '@/components/context-menus/folder-context-menu'
 
 interface SidebarFolderProps {
   folder: FolderRecord
@@ -34,10 +32,10 @@ export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: S
   const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
   const { set } = useAppStateStore((state) => state.actions)
 
-  const editingFolderId = useUiStore((state) => state.editingFolderId)
-  const { startFolderRename, stopFolderRename } = useUiStore((state) => state.actions)
+  const editingElement = useUiStore((state) => state.editingElement)
+  const { startEditing, stopEditing } = useUiStore((state) => state.actions)
 
-  const isEditing = editingFolderId === folder.id
+  const isEditing = editingElement?.type === 'sidebar-folder' && editingElement.id === folder.id
   const isExpanded = expandedFolderIds.includes(folder.id)
 
   useEffect(() => {
@@ -129,92 +127,19 @@ export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: S
           >
             <ChevronRight className={isExpanded ? 'rotate-90 transition-transform' : 'transition-transform'} />
             <Folder />
-            {isEditing ? (
-              <InlineEdit
-                initialValue={folder.name}
-                onSave={async (next) => {
-                  await window.api.folders.rename(folder.id, next)
-                }}
-                onClose={stopFolderRename}
-                aria-label={`Rename folder ${folder.name}`}
-              />
-            ) : (
-              <span>{folder.name}</span>
-            )}
+            <InlineEdit
+              value={folder.name}
+              isEditing={isEditing}
+              onSave={async (next) => {
+                await window.api.folders.rename(folder.id, next)
+              }}
+              onClose={stopEditing}
+              aria-label={`Rename folder ${folder.name}`}
+            />
           </SidebarMenuButton>
         </ContextMenuTrigger>
-        <SidebarFolderContextMenu folder={folder} onRename={() => startFolderRename(folder.id)} />
+        <SidebarFolderContextMenu folder={folder} onRename={(folderId) => startEditing({ type: 'sidebar-folder', id: folderId })} />
       </ContextMenu>
     </SidebarMenuItem>
-  )
-}
-
-interface SidebarFolderContextMenuProps {
-  folder: FolderRecord
-  onRename: () => void
-}
-
-function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenuProps): React.JSX.Element {
-  const lastUsedProviderId = useAppStateStore((state) => state.lastUsedProviderId)
-  const { set } = useAppStateStore((state) => state.actions)
-  const { newChat } = useChatStore((state) => state.actions)
-  const { setPage } = useNavigationStore((state) => state.actions)
-  const { startFolderRename } = useUiStore((state) => state.actions)
-
-  const lastUsedProvider = getChatProvider(lastUsedProviderId)
-
-  const createChat = (providerId: ChatProviderId) => {
-    void set('lastUsedProviderId', providerId)
-    void newChat(providerId, folder.id)
-    setPage({ type: 'chat', id: null })
-  }
-
-  const handleNewFolder = async (): Promise<void> => {
-    const newFolder = await window.api.folders.create(null, folder.id)
-    if (newFolder) {
-      startFolderRename(newFolder.id)
-    }
-  }
-
-  return (
-    <ContextMenuContent>
-      <ContextMenuSub>
-        <ContextMenuSubTrigger>
-          <MessageSquarePlus />
-          <span>New chat</span>
-        </ContextMenuSubTrigger>
-
-        <ContextMenuSubContent>
-          <ContextMenuItem aria-label={`New ${lastUsedProvider.name} chat`} title={`New ${lastUsedProvider.name} chat`} onClick={() => createChat(lastUsedProvider.id)}>
-            <ChatProviderIcon providerId={lastUsedProvider.id} />
-            <span>{lastUsedProvider.name}</span>
-          </ContextMenuItem>
-
-          <ContextMenuSeparator />
-
-          {CHAT_PROVIDERS.map((provider) => (
-            <ContextMenuItem key={provider.id} aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} onClick={() => createChat(provider.id)}>
-              <ChatProviderIcon providerId={provider.id} />
-              <span>{provider.name}</span>
-            </ContextMenuItem>
-          ))}
-        </ContextMenuSubContent>
-      </ContextMenuSub>
-      <ContextMenuItem onClick={handleNewFolder}>
-        <FolderPlus />
-        <span>New folder</span>
-      </ContextMenuItem>
-
-      <ContextMenuSeparator />
-
-      <ContextMenuItem onClick={onRename}>
-        <Pencil />
-        <span>Rename</span>
-      </ContextMenuItem>
-      <ContextMenuItem variant="destructive" onClick={() => void window.api.folders.delete(folder.id)}>
-        <Trash2 />
-        <span>Remove</span>
-      </ContextMenuItem>
-    </ContextMenuContent>
   )
 }

@@ -1,21 +1,23 @@
 import { create } from 'zustand'
 
+export type EditingElement = { type: string; id?: number }
+
 type UiStore = {
-  editingFolderId: number | null
+  editingElement: EditingElement | null
   actions: {
-    startFolderRename: (folderId: number) => void
-    stopFolderRename: () => void
+    startEditing: (element: EditingElement) => void
+    stopEditing: () => void
   }
 }
 
 export const useUiStore = create<UiStore>((set) => ({
-  editingFolderId: null,
+  editingElement: null,
   actions: {
-    startFolderRename: (folderId) => {
-      set({ editingFolderId: folderId })
+    startEditing: (element) => {
+      set({ editingElement: element })
     },
-    stopFolderRename: () => {
-      set({ editingFolderId: null })
+    stopEditing: () => {
+      set({ editingElement: null })
     }
   }
 }))
