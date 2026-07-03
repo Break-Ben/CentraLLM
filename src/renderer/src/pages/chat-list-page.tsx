@@ -166,6 +166,7 @@ interface FolderRowProps {
 function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropItem, onMoveBefore, onMoveAfter }: FolderRowProps) {
   const rowRef = useRef<HTMLTableRowElement | null>(null)
   const [dropIndicator, setDropIndicator] = useState<'inside' | 'top' | 'bottom' | null>(null)
+  const isDescendant = useFolderStore((state) => state.actions.isDescendant)
 
   useEffect(() => {
     const element = rowRef.current
@@ -187,7 +188,10 @@ function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropItem, onM
             operations: isCustomSort ? { 'reorder-before': 'available', 'reorder-after': 'available', combine: 'available' } : { combine: 'available' }
           }),
         canDrop: ({ source }) => {
-          if (source.data.id === folder.id) {
+          if (source.data.type === 'folder' && source.data.id === folder.id) {
+            return false
+          }
+          if (source.data.type === 'folder' && isDescendant(source.data.id as number, folder.id)) {
             return false
           }
           return source.data.type === 'chat' || source.data.type === 'folder'
@@ -242,7 +246,7 @@ function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropItem, onM
         }
       })
     )
-  }, [folder.id, folder.parentFolderId, isCustomSort, nextFolderId, onDropItem, onMoveAfter, onMoveBefore])
+  }, [folder.id, folder.parentFolderId, isCustomSort, nextFolderId, onDropItem, onMoveAfter, onMoveBefore, isDescendant])
 
   return (
     <TableRow
