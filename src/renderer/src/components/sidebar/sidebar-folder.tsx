@@ -3,7 +3,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { attachInstruction, extractInstruction } from '@atlaskit/pragmatic-drag-and-drop-hitbox/list-item'
 import { ChevronRight, Folder } from 'lucide-react'
-import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar'
+import { SidebarMenuItem, SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
 import { InlineEdit } from '@/components/ui/inline-edit'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { FolderRecord } from '@shared/folder'
@@ -23,7 +23,8 @@ interface SidebarFolderProps {
 }
 
 export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: SidebarFolderProps): React.JSX.Element {
-  const itemRef = useRef<HTMLLIElement | null>(null)
+  const { state: sidebarState } = useSidebar()
+  const itemRef = useRef<HTMLButtonElement | null>(null)
   const [dropIndicator, setDropIndicator] = useState<'inside' | 'top' | 'bottom' | null>(null)
 
   const { moveToFolder: moveFolderToFolder, moveBefore, moveAfter, isDescendant } = useFolderStore((state) => state.actions)
@@ -107,16 +108,13 @@ export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: S
   }, [folder.id, parentFolderId, isCustomSort, moveChatToFolder, moveFolderToFolder, moveBefore, moveAfter, isDescendant])
 
   return (
-    <SidebarMenuItem
-      ref={itemRef}
-      className={cn('[clip-path:inset(0_round_0.375rem)]', dropIndicator === 'top' && 'shadow-[inset_0_2px_0_0_var(--primary)]', dropIndicator === 'bottom' && 'shadow-[inset_0_-2px_0_0_var(--primary)]')}
-      style={{ marginLeft: depth * 24 }}
-    >
+    <SidebarMenuItem className={cn(dropIndicator === 'top' && 'shadow-[inset_0_2px_0_0_var(--primary)]', dropIndicator === 'bottom' && 'shadow-[inset_0_-2px_0_0_var(--primary)]')} style={{ marginLeft: sidebarState === 'expanded' ? depth * 24 : 0 }}>
       <ContextMenu>
         <ContextMenuTrigger>
           <SidebarMenuButton
+            ref={itemRef}
             title={folder.name}
-            className={cn(dropIndicator === 'inside' && 'bg-sidebar-accent text-sidebar-accent-foreground')}
+            className={cn('[clip-path:inset(0_round_var(--radius-md))]', dropIndicator === 'inside' && 'bg-sidebar-accent text-sidebar-accent-foreground')}
             onClick={() => {
               if (isEditing) {
                 return

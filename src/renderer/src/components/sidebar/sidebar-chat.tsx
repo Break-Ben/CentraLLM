@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { attachClosestEdge, extractClosestEdge, Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
-import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar'
+import { SidebarMenuItem, SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { ChatRecord, getChatDisplayName } from '@shared/chat'
@@ -20,7 +20,8 @@ interface SidebarChatProps {
 }
 
 export function SidebarChat({ chat, depth, parentFolderId, isCustomSort }: SidebarChatProps): React.JSX.Element {
-  const itemRef = useRef<HTMLLIElement | null>(null)
+  const { state: sidebarState } = useSidebar()
+  const itemRef = useRef<HTMLButtonElement | null>(null)
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null)
 
   const page = useNavigationStore((state) => state.page)
@@ -61,14 +62,12 @@ export function SidebarChat({ chat, depth, parentFolderId, isCustomSort }: Sideb
   }, [chat.id, parentFolderId, isCustomSort, moveBefore, moveAfter])
 
   return (
-    <SidebarMenuItem
-      ref={itemRef}
-      className={cn('[clip-path:inset(0_round_0.375rem)]', closestEdge === 'top' && 'shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && 'shadow-[inset_0_-2px_0_0_var(--primary)]')}
-      style={{ marginLeft: depth * 24 }}
-    >
+    <SidebarMenuItem className={cn(closestEdge === 'top' && 'shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && 'shadow-[inset_0_-2px_0_0_var(--primary)]')} style={{ marginLeft: sidebarState === 'expanded' ? depth * 24 : 0 }}>
       <ContextMenu>
         <ContextMenuTrigger>
           <SidebarMenuButton
+            ref={itemRef}
+            className="[clip-path:inset(0_round_var(--radius-md))]"
             isActive={page.type === 'chat' && page.id === chat.id}
             title={displayName}
             onClick={() => {

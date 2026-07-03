@@ -132,14 +132,14 @@ function AppSidebarContextMenu(): React.JSX.Element {
   const { set } = useAppStateStore((state) => state.actions)
   const { newChat } = useChatStore((state) => state.actions)
   const { setPage } = useNavigationStore((state) => state.actions)
-  const { startFolderRename } = useUiStore((state) => state.actions)
+  const { startEditing } = useUiStore((state) => state.actions)
 
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
   const handleNewFolder = async (): Promise<void> => {
     const newFolder = await window.api.folders.create()
     if (newFolder) {
-      startFolderRename(newFolder.id)
+      startEditing({ type: 'sidebar-folder', id: newFolder.id })
     }
   }
 
