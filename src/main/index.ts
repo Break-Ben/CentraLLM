@@ -78,8 +78,8 @@ app.whenReady().then(() => {
   db.pragma('journal_mode = WAL')
   db.pragma('foreign_keys = ON')
 
-  chatRepo = new ChatRepository(db)
   folderRepo = new FolderRepository(db)
+  chatRepo = new ChatRepository(db)
   appStateRepo = new AppStateRepository(db)
   preferencesRepo = new PreferencesRepository(db)
 
