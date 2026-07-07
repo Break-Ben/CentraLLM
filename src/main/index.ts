@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import { join } from 'path'
 import Database from 'better-sqlite3'
 import { electronApp, is } from '@electron-toolkit/utils'
@@ -29,10 +29,18 @@ function createWindow(): void {
     throw new Error('Chat/folder repository is not initialised')
   }
 
+  const getTitleBarOptions = () => ({
+    color: nativeTheme.shouldUseDarkColors ? '#171717' : '#fafafa',
+    symbolColor: nativeTheme.shouldUseDarkColors ? '#ffffff' : '#000000',
+    height: 39
+  })
+
   mainWindow = new BrowserWindow({
     width: 1500,
     height: 1000,
     show: false,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: getTitleBarOptions(),
     backgroundColor: '#00000000',
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -42,12 +50,12 @@ function createWindow(): void {
     }
   })
 
+  nativeTheme.on('updated', () => mainWindow?.setTitleBarOverlay(getTitleBarOptions()))
+
   navigationController = new NavigationController(mainWindow, folderRepo)
   chatController = new ChatController(mainWindow, chatRepo, navigationController)
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow?.show()
-  })
+  mainWindow.on('ready-to-show', () => mainWindow?.show())
 
   mainWindow.on('closed', () => {
     chatController?.destroy()
@@ -83,6 +91,8 @@ app.whenReady().then(() => {
   appStateRepo = new AppStateRepository(db)
   preferencesRepo = new PreferencesRepository(db)
 
+  nativeTheme.themeSource = preferencesRepo.getAll().theme
+
   // Navigation
   ipcMain.on('navigation:page-changed', (_event, page: Page) => {
     navigationController?.setPage(page)
@@ -102,7 +112,12 @@ app.whenReady().then(() => {
 
   // Preferences
   ipcMain.handle('preferences:get-all', () => preferencesRepo?.getAll() ?? {})
-  ipcMain.handle('preferences:set', (_event, key: keyof Preferences, value: Preferences[typeof key]) => preferencesRepo?.set(key, value))
+  ipcMain.handle('preferences:set', (_event, key: keyof Preferences, value: Preferences[typeof key]) => {
+    if (key === 'theme') {
+      nativeTheme.themeSource = value
+    }
+    return preferencesRepo?.set(key, value)
+  })
 
   // Chats
   ipcMain.handle('chats:list', () => chatRepo?.listChats() ?? [])

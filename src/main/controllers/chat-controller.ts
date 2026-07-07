@@ -94,7 +94,7 @@ export class ChatController {
 
     this.view.setVisible(true)
     this.updateAppTitle(chat)
-    this.emitActiveChatChanged(chat.id)
+    this.emitActiveChatChanged(chat.id, chat.folderId)
 
     await this.view.webContents.loadURL(getChatUrl(this.currentLocation)).catch(() => undefined)
   }
@@ -107,7 +107,7 @@ export class ChatController {
 
     this.view.setVisible(true)
     this.window.setTitle('CentraLLM')
-    this.emitActiveChatChanged(null)
+    this.emitActiveChatChanged(null, folderId)
 
     await this.view.webContents.loadURL(getNewChatUrl(providerId)).catch(() => undefined)
   }
@@ -123,7 +123,7 @@ export class ChatController {
     this.pendingNewChatFolderId = null
     this.clearTitleProtection()
     this.updateAppTitle()
-    this.emitActiveChatChanged(null)
+    this.emitActiveChatChanged(null, null)
 
     void this.view.webContents.loadURL(getNewChatUrl(providerId)).catch(() => undefined)
   }
@@ -173,7 +173,7 @@ export class ChatController {
       this.updateAppTitle(existingChat)
       if (this.activeId !== existingChat.id) {
         this.activeId = existingChat.id
-        this.emitActiveChatChanged(existingChat.id)
+        this.emitActiveChatChanged(existingChat.id, existingChat.folderId)
       }
       return
     }
@@ -191,7 +191,7 @@ export class ChatController {
 
     if (this.activeId !== chat.id) {
       this.activeId = chat.id
-      this.emitActiveChatChanged(chat.id)
+      this.emitActiveChatChanged(chat.id, chat.folderId)
     }
 
     this.updateAppTitle(chat)
@@ -223,7 +223,7 @@ export class ChatController {
     this.window.webContents.send('chats:changed', this.repository.listChats())
   }
 
-  private emitActiveChatChanged(chatId: number | null): void {
-    this.window.webContents.send('chats:active-changed', chatId)
+  private emitActiveChatChanged(chatId: number | null, folderId: number | null = null): void {
+    this.window.webContents.send('chats:active-changed', chatId, folderId)
   }
 }

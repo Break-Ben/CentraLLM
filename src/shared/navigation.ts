@@ -1,1 +1,1 @@
-export type Page = { type: 'home' } | { type: 'chat-list'; folderId: number | null } | { type: 'chat'; id: number | null } | { type: 'settings' }
+export type Page = { type: 'home' } | { type: 'chat-list'; folderId: number | null } | { type: 'chat'; chatId: number | null; folderId: number | null } | { type: 'settings' }

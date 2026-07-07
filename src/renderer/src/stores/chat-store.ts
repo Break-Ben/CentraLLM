@@ -29,11 +29,11 @@ export const useChatStore = create<ChatStore>((set) => ({
       const disposeChats = window.api.chats.onChanged((items) => {
         set({ chats: items })
       })
-      const disposeActive = window.api.chats.onActiveChanged((activeId) => {
+      const disposeActive = window.api.chats.onActiveChanged((activeId, folderId) => {
         const { page } = useNavigationStore.getState()
         const { setPage } = useNavigationStore.getState().actions
         if (page.type === 'chat') {
-          setPage({ type: 'chat', id: activeId })
+          setPage({ type: 'chat', chatId: activeId, folderId })
         }
       })
 

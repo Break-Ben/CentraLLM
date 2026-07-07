@@ -36,8 +36,8 @@ const api = {
       ipcRenderer.on('chats:changed', listener)
       return () => ipcRenderer.removeListener('chats:changed', listener)
     },
-    onActiveChanged: (callback: (chatId: number | null) => void) => {
-      const listener = (_event: IpcRendererEvent, chatId: number | null) => callback(chatId)
+    onActiveChanged: (callback: (chatId: number | null, folderId: number | null) => void) => {
+      const listener = (_event: IpcRendererEvent, chatId: number | null, folderId: number | null) => callback(chatId, folderId)
       ipcRenderer.on('chats:active-changed', listener)
       return () => ipcRenderer.removeListener('chats:active-changed', listener)
     }

@@ -33,7 +33,7 @@ declare global {
         moveBefore: (chatId: number, beforeChatId: number) => Promise<void>
         moveAfter: (chatId: number, afterChatId: number) => Promise<void>
         onChanged: (callback: (chats: ChatRecord[]) => void) => () => void
-        onActiveChanged: (callback: (chatId: number | null) => void) => () => void
+        onActiveChanged: (callback: (chatId: number | null, folderId: number | null) => void) => () => void
       }
       folders: {
         list: () => Promise<FolderRecord[]>

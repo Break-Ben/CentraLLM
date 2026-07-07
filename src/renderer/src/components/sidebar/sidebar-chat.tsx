@@ -68,11 +68,11 @@ export function SidebarChat({ chat, depth, parentFolderId, isCustomSort }: Sideb
           <SidebarMenuButton
             ref={itemRef}
             className="[clip-path:inset(0_round_var(--radius-md))]"
-            isActive={page.type === 'chat' && page.id === chat.id}
+            isActive={page.type === 'chat' && page.chatId === chat.id}
             title={displayName}
             onClick={() => {
               void openChat(chat.id)
-              setPage({ type: 'chat', id: chat.id })
+              setPage({ type: 'chat', chatId: chat.id, folderId: chat.folderId })
             }}
           >
             <ChatProviderIcon providerId={chat.providerId} />

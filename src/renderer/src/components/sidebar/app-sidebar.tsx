@@ -146,7 +146,7 @@ function AppSidebarContextMenu(): React.JSX.Element {
   const createChat = (providerId: ChatProviderId) => {
     void set('lastUsedProviderId', providerId)
     void newChat(providerId)
-    setPage({ type: 'chat', id: null })
+    setPage({ type: 'chat', chatId: null, folderId: null })
   }
 
   return (

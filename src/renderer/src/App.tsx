@@ -7,6 +7,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { MainView } from '@/components/main-view'
 import { useThemeSync } from '@/hooks/use-theme-sync'
+import { AppTitlebar } from '@/components/app-titlebar'
 
 export default function App(): React.JSX.Element {
   useThemeSync()
@@ -24,13 +25,16 @@ export default function App(): React.JSX.Element {
   }, [])
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <main className="flex min-h-0 flex-1">
-          <MainView />
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex h-screen flex-col">
+      <AppTitlebar />
+      <SidebarProvider className="flex min-h-0 flex-1 overflow-hidden">
+        <AppSidebar />
+        <SidebarInset>
+          <main className="flex min-h-0 flex-1 overflow-hidden">
+            <MainView />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   )
 }

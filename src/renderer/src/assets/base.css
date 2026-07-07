@@ -128,3 +128,13 @@
     @apply font-sans;
   }
 }
+
+body {
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable='true'] {
+  user-select: text;
+}
