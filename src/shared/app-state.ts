@@ -12,10 +12,14 @@ export interface AppState {
   lastUsedProviderId: ChatProviderId
   sortingOrder: SortingOrder
   expandedFolderIds: number[]
+  sidebarWidth: number
+  sidebarOpen: boolean
 }
 
 export const DEFAULTS: AppState = {
   lastUsedProviderId: 'chatgpt',
   sortingOrder: 'alphabetical',
-  expandedFolderIds: []
+  expandedFolderIds: [],
+  sidebarWidth: 256,
+  sidebarOpen: true
 }
