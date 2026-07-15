@@ -108,7 +108,10 @@ export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: S
   }, [folder.id, parentFolderId, isCustomSort, moveChatToFolder, moveFolderToFolder, moveBefore, moveAfter, isDescendant])
 
   return (
-    <SidebarMenuItem className={cn(dropIndicator === 'top' && 'shadow-[inset_0_2px_0_0_var(--primary)]', dropIndicator === 'bottom' && 'shadow-[inset_0_-2px_0_0_var(--primary)]')} style={{ marginLeft: sidebarState === 'expanded' ? depth * 24 : 0 }}>
+    <SidebarMenuItem
+      className={cn('transition-[margin-left] duration-200 ease-linear', dropIndicator === 'top' && 'shadow-[inset_0_2px_0_0_var(--primary)]', dropIndicator === 'bottom' && 'shadow-[inset_0_-2px_0_0_var(--primary)]')}
+      style={{ marginLeft: sidebarState === 'expanded' ? depth * 24 : 0 }}
+    >
       <ContextMenu>
         <ContextMenuTrigger>
           <SidebarMenuButton

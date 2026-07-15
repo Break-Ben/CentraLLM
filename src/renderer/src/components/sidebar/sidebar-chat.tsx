@@ -62,7 +62,10 @@ export function SidebarChat({ chat, depth, parentFolderId, isCustomSort }: Sideb
   }, [chat.id, parentFolderId, isCustomSort, moveBefore, moveAfter])
 
   return (
-    <SidebarMenuItem className={cn(closestEdge === 'top' && 'shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && 'shadow-[inset_0_-2px_0_0_var(--primary)]')} style={{ marginLeft: sidebarState === 'expanded' ? depth * 24 : 0 }}>
+    <SidebarMenuItem
+      className={cn('transition-[margin-left] duration-200 ease-linear', closestEdge === 'top' && 'shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && 'shadow-[inset_0_-2px_0_0_var(--primary)]')}
+      style={{ marginLeft: sidebarState === 'expanded' ? depth * 24 : 0 }}
+    >
       <ContextMenu>
         <ContextMenuTrigger>
           <SidebarMenuButton
