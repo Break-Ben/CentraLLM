@@ -6,7 +6,15 @@ export function useThemeSync() {
 
   useEffect(() => {
     const root = document.documentElement
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    root.classList.toggle('dark', isDark)
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const updateTheme = () => {
+      const isDark = theme === 'dark' || (theme === 'system' && mediaQuery.matches)
+      root.classList.toggle('dark', isDark)
+    }
+    updateTheme()
+
+    mediaQuery.addEventListener('change', updateTheme)
+    return () => mediaQuery.removeEventListener('change', updateTheme)
   }, [theme])
 }
