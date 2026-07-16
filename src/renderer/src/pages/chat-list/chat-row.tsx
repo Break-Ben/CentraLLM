@@ -3,7 +3,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { attachClosestEdge, extractClosestEdge, Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import { TableCell, TableRow } from '@/components/ui/table'
-import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { SidebarChatContextMenu } from '@/components/context-menus/chat-context-menu'
 import { getChatDisplayName, ChatRecord, getChatProvider } from '@shared/chat'
@@ -65,13 +65,13 @@ export function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore, 
         >
           <TableCell>
             <span className="inline-flex items-center gap-2">
-              <ChatProviderIcon providerId={chat.providerId} />
+              <ChatProviderLogo providerId={chat.providerId} />
               <span>{getChatDisplayName(chat)}</span>
             </span>
           </TableCell>
           <TableCell>
             <span className="inline-flex items-center gap-2">
-              <ChatProviderIcon providerId={chat.providerId} />
+              <ChatProviderLogo providerId={chat.providerId} />
               <span>{getChatProvider(chat.providerId).name}</span>
             </span>
           </TableCell>

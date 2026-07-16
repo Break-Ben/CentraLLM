@@ -6,7 +6,7 @@ import { SidebarMenuItem, SidebarMenuButton, useSidebar } from '@/components/ui/
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { ChatRecord, getChatDisplayName } from '@shared/chat'
-import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { DragItemData } from '@/constants/directory'
 import { cn } from '@/lib/utils'
@@ -78,7 +78,7 @@ export function SidebarChat({ chat, depth, parentFolderId, isCustomSort }: Sideb
               setPage({ type: 'chat', chatId: chat.id, folderId: chat.folderId })
             }}
           >
-            <ChatProviderIcon providerId={chat.providerId} />
+            <ChatProviderLogo providerId={chat.providerId} />
             <span>{displayName}</span>
           </SidebarMenuButton>
         </ContextMenuTrigger>

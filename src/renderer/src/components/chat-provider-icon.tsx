@@ -21,12 +21,12 @@ const ICON_MAP: Record<ChatProviderId, ComponentType<SVGProps<SVGSVGElement>>> =
   perplexity: PerplexityLogo
 }
 
-interface ChatProviderIconProps extends Omit<SVGProps<SVGSVGElement>, 'width' | 'height'> {
+interface ChatProviderLogoProps extends Omit<SVGProps<SVGSVGElement>, 'width' | 'height'> {
   providerId: ChatProviderId
   size?: number | string
 }
 
-export function ChatProviderIcon({ providerId, size = 16, ...props }: ChatProviderIconProps) {
+export function ChatProviderLogo({ providerId, size = 16, ...props }: ChatProviderLogoProps) {
   const IconComponent = ICON_MAP[providerId]
   return <IconComponent {...props} width={size} height={size} />
 }

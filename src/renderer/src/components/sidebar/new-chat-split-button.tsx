@@ -4,7 +4,7 @@ import { useChatStore } from '@/stores/chat-store'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { useSidebar } from '@/components/ui/sidebar'
 import { CHAT_PROVIDERS, getChatProvider } from '@shared/chat'
 import { useNavigationStore } from '@/stores/navigation-store'
@@ -32,7 +32,7 @@ export function NewChatSplitButton(): React.JSX.Element {
           setPage({ type: 'chat', chatId: null, folderId: null })
         }}
       >
-        <ChatProviderIcon providerId={lastUsedProviderId} />
+        <ChatProviderLogo providerId={lastUsedProviderId} />
       </Button>
     )
   }
@@ -49,7 +49,7 @@ export function NewChatSplitButton(): React.JSX.Element {
           setPage({ type: 'chat', chatId: null, folderId: null })
         }}
       >
-        <ChatProviderIcon providerId={lastUsedProviderId} />
+        <ChatProviderLogo providerId={lastUsedProviderId} />
         <span>New Chat</span>
       </Button>
 
@@ -75,7 +75,7 @@ export function NewChatSplitButton(): React.JSX.Element {
                   setPage({ type: 'chat', chatId: null, folderId: null })
                 }}
               >
-                <ChatProviderIcon providerId={provider.id} />
+                <ChatProviderLogo providerId={provider.id} />
                 <span>{provider.name}</span>
               </DropdownMenuItem>
             ))}

@@ -11,7 +11,7 @@ import { SidebarChat } from '@/components/sidebar/sidebar-chat'
 import { SidebarFolder } from '@/components/sidebar/sidebar-folder'
 import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
-import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { CHAT_PROVIDERS, ChatProviderId, getChatProvider } from '@shared/chat'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
@@ -159,7 +159,7 @@ function AppSidebarContextMenu(): React.JSX.Element {
 
         <ContextMenuSubContent>
           <ContextMenuItem aria-label={`New ${lastUsedProvider.name} chat`} title={`New ${lastUsedProvider.name} chat`} onClick={() => createChat(lastUsedProvider.id)}>
-            <ChatProviderIcon providerId={lastUsedProvider.id} />
+            <ChatProviderLogo providerId={lastUsedProvider.id} />
             <span>{lastUsedProvider.name}</span>
           </ContextMenuItem>
 
@@ -167,7 +167,7 @@ function AppSidebarContextMenu(): React.JSX.Element {
 
           {CHAT_PROVIDERS.map((provider) => (
             <ContextMenuItem aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} key={provider.id} onClick={() => createChat(provider.id)}>
-              <ChatProviderIcon providerId={provider.id} />
+              <ChatProviderLogo providerId={provider.id} />
               <span>{provider.name}</span>
             </ContextMenuItem>
           ))}

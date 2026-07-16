@@ -1,4 +1,4 @@
-import { ChatProviderIcon } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { ContextMenuContent, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu'
 import { useAppStateStore } from '@/stores/app-state-store'
 import { useChatStore } from '@/stores/chat-store'
@@ -43,7 +43,7 @@ export function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderCont
 
         <ContextMenuSubContent>
           <ContextMenuItem aria-label={`New ${lastUsedProvider.name} chat`} title={`New ${lastUsedProvider.name} chat`} onClick={() => createChat(lastUsedProvider.id)}>
-            <ChatProviderIcon providerId={lastUsedProvider.id} />
+            <ChatProviderLogo providerId={lastUsedProvider.id} />
             <span>{lastUsedProvider.name}</span>
           </ContextMenuItem>
 
@@ -51,7 +51,7 @@ export function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderCont
 
           {CHAT_PROVIDERS.map((provider) => (
             <ContextMenuItem key={provider.id} aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} onClick={() => createChat(provider.id)}>
-              <ChatProviderIcon providerId={provider.id} />
+              <ChatProviderLogo providerId={provider.id} />
               <span>{provider.name}</span>
             </ContextMenuItem>
           ))}

@@ -43,7 +43,7 @@ function createWindow(): void {
     titleBarOverlay: getTitleBarOptions(),
     backgroundColor: '#00000000',
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    ...(process.platform === 'linux' || is.dev ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
