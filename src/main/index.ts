@@ -50,6 +50,8 @@ function createWindow(): void {
     }
   })
 
+  mainWindow.setMinimumSize(200, 200)
+
   nativeTheme.on('updated', () => mainWindow?.setTitleBarOverlay(getTitleBarOptions()))
 
   navigationController = new NavigationController(mainWindow, folderRepo)

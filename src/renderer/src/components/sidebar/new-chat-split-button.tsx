@@ -10,8 +10,8 @@ import { CHAT_PROVIDERS, getChatProvider } from '@shared/chat'
 import { useNavigationStore } from '@/stores/navigation-store'
 
 export function NewChatSplitButton(): React.JSX.Element {
-  const { state: sidebarState, isMobile } = useSidebar()
-  const isCompact = sidebarState === 'collapsed' || isMobile
+  const { state: sidebarState } = useSidebar()
+  const isCompact = sidebarState === 'collapsed'
 
   const lastUsedProviderId = useAppStateStore((state) => state.lastUsedProviderId)
   const { set } = useAppStateStore((state) => state.actions)
