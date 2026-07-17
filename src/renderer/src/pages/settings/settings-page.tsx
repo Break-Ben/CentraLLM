@@ -1,15 +1,27 @@
-import { SettingOption } from '@/pages/settings/settings-option'
-import { SettingsSection } from '@/pages/settings/settings-section'
-import { ThemeSelector } from '@/pages/settings/theme-selector'
+import { useNavigationStore } from '@/stores/navigation-store'
+import { CATEGORY_LABELS, PreferenceCategory } from '@shared/preferences'
+import { SettingsCategory } from '@/pages/settings/settings-category'
+import { SettingsCategoryButton } from '@/pages/settings/settings-category-button'
 
 export function SettingsPage(): React.JSX.Element {
+  const page = useNavigationStore((state) => state.page)
+  const setPage = useNavigationStore((state) => state.actions.setPage)
+
+  if (page.type !== 'settings') {
+    return <></>
+  }
+
   return (
-    <div className="mx-auto h-full w-full max-w-2xl overflow-y-auto scrollbar-none space-y-8 p-8">
-      <SettingsSection title="Appearance">
-        <SettingOption label="Theme" description="Choose your preferred colour scheme">
-          <ThemeSelector />
-        </SettingOption>
-      </SettingsSection>
+    <div className="flex size-full gap-10 overflow-hidden px-8">
+      <div className="w-56 shrink-0 overflow-y-auto scrollbar-none pt-9 pb-8 space-y-1">
+        {(Object.keys(CATEGORY_LABELS) as PreferenceCategory[]).map((category) => (
+          <SettingsCategoryButton key={category} category={category} isActive={page.category === category} onClick={() => setPage({ type: 'settings', category })} />
+        ))}
+      </div>
+
+      <div className="min-w-0 flex-1 overflow-y-auto scrollbar-none py-8">
+        <SettingsCategory category={page.category} />
+      </div>
     </div>
   )
 }

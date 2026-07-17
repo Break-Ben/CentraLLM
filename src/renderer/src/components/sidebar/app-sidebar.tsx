@@ -114,7 +114,7 @@ export function AppSidebar(): React.JSX.Element {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton isActive={page.type === 'settings'} onClick={() => setPage({ type: 'settings' })}>
+            <SidebarMenuButton isActive={page.type === 'settings'} onClick={() => setPage({ type: 'settings', category: 'general' })}>
               <Settings />
               <span>Settings</span>
             </SidebarMenuButton>

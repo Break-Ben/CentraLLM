@@ -6,6 +6,7 @@ import { useFolderStore } from '@/stores/folder-store'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { FolderRecord } from '@shared/folder'
 import { getChatDisplayName } from '@shared/chat'
+import { CATEGORY_LABELS } from '@shared/preferences'
 
 type Crumb = {
   key: string
@@ -129,8 +130,9 @@ function useCrumbs(): Crumb[] {
     if (page.type === 'home') {
       return [root]
     }
+
     if (page.type === 'settings') {
-      return [root, { key: 'settings', label: 'Settings' }]
+      return [root, { key: 'settings', label: 'Settings', onClick: () => setPage({ type: 'settings', category: 'general' }) }, { key: 'settings-category', label: CATEGORY_LABELS[page.category] }]
     }
 
     const chatsCrumb: Crumb = { key: 'chats', label: 'Chats', onClick: () => setPage({ type: 'chat-list', folderId: null }) }
@@ -173,7 +175,6 @@ function useVisibleCrumbs(crumbs: Crumb[], containerRef: RefObject<HTMLDivElemen
         return
       }
 
-      // Measure the uniform spacing between items: gap + separator + gap
       const sepWidth = sepEls[0]?.getBoundingClientRect().width ?? 0
       const gap = sepEls[0] ? sepEls[0].getBoundingClientRect().left - itemEls[0].getBoundingClientRect().right : 0
       const slotSpacing = 2 * gap + sepWidth
@@ -192,7 +193,6 @@ function useVisibleCrumbs(crumbs: Crumb[], containerRef: RefObject<HTMLDivElemen
       const middleWidths = itemWidths.slice(1, 1 + middleCount)
       const lastWidth = itemWidths[itemWidths.length - 1]
 
-      // Total rendered width = sum of item widths + (n - 1) uniform slot spacings
       const widthWithHidden = (hiddenCount: number): number => {
         const visibleWidths = [rootWidth, ...(hiddenCount > 0 ? [ellipsisWidth] : []), ...middleWidths.slice(hiddenCount), lastWidth]
         return visibleWidths.reduce((sum, width) => sum + width, 0) + (visibleWidths.length - 1) * slotSpacing

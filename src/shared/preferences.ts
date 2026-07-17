@@ -1,5 +1,12 @@
 const DATE_TIME_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 
+export type PreferenceCategory = 'general' | 'appearance'
+
+export const CATEGORY_LABELS: Record<PreferenceCategory, string> = {
+  general: 'General',
+  appearance: 'Appearance'
+}
+
 export interface Preferences {
   theme: 'system' | 'light' | 'dark'
 }
