@@ -1,7 +1,16 @@
 import { useNavigationStore } from '@/stores/navigation-store'
 import { CATEGORY_LABELS, PreferenceCategory } from '@shared/preferences'
-import { SettingsCategory } from '@/pages/settings/settings-category'
 import { SettingsCategoryButton } from '@/pages/settings/settings-category-button'
+
+import { AppearanceView } from '@/pages/settings/views/appearance-view'
+import { GeneralView } from '@/pages/settings/views/general-view'
+import { ProvidersView } from '@/pages/settings/views/providers-view'
+
+const CATEGORY_VIEWS: Record<PreferenceCategory, React.ComponentType> = {
+  general: GeneralView,
+  appearance: AppearanceView,
+  providers: ProvidersView
+}
 
 export function SettingsPage(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
@@ -10,6 +19,8 @@ export function SettingsPage(): React.JSX.Element {
   if (page.type !== 'settings') {
     return <></>
   }
+
+  const ActiveCategoryView = CATEGORY_VIEWS[page.category]
 
   return (
     <div className="flex size-full gap-10 overflow-hidden px-8">
@@ -20,7 +31,9 @@ export function SettingsPage(): React.JSX.Element {
       </div>
 
       <div className="min-w-0 flex-1 overflow-y-auto scrollbar-none py-8">
-        <SettingsCategory category={page.category} />
+        <div className="mx-auto w-full max-w-2xl space-y-8">
+          <ActiveCategoryView />
+        </div>
       </div>
     </div>
   )
