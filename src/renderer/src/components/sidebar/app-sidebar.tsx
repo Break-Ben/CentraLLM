@@ -12,11 +12,12 @@ import { SidebarFolder } from '@/components/sidebar/sidebar-folder'
 import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { ChatProviderLogo } from '@/components/chat-provider-icon'
-import { CHAT_PROVIDERS, ChatProviderId, getChatProvider } from '@shared/chat'
+import { ChatProviderId, getChatProvider } from '@shared/chat'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { DragItemData } from '@/constants/directory'
 import { cn } from '@/lib/utils'
+import { useShownProviders } from '@/hooks/use-providers'
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
@@ -133,6 +134,7 @@ function AppSidebarContextMenu(): React.JSX.Element {
   const { newChat } = useChatStore((state) => state.actions)
   const { setPage } = useNavigationStore((state) => state.actions)
   const { startEditing } = useUiStore((state) => state.actions)
+  const shownProviders = useShownProviders()
 
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
@@ -165,7 +167,7 @@ function AppSidebarContextMenu(): React.JSX.Element {
 
           <ContextMenuSeparator />
 
-          {CHAT_PROVIDERS.map((provider) => (
+          {shownProviders.map((provider) => (
             <ContextMenuItem aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} key={provider.id} onClick={() => createChat(provider.id)}>
               <ChatProviderLogo providerId={provider.id} />
               <span>{provider.name}</span>

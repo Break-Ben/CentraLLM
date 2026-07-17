@@ -2,14 +2,16 @@ import { useAppStateStore } from '@/stores/app-state-store'
 import { useChatStore } from '@/stores/chat-store'
 import { Button } from '@/components/ui/button'
 import { ChatProviderLogo } from '@/components/chat-provider-icon'
-import { CHAT_PROVIDERS, getChatProvider } from '@shared/chat'
+import { getChatProvider } from '@shared/chat'
 import { useNavigationStore } from '@/stores/navigation-store'
+import { useShownProviders } from '@/hooks/use-providers'
 
 export function ProviderList(): React.JSX.Element {
   const lastUsedProviderId = useAppStateStore((state) => state.lastUsedProviderId)
   const { set } = useAppStateStore((state) => state.actions)
   const { newChat } = useChatStore((state) => state.actions)
   const { setPage } = useNavigationStore((state) => state.actions)
+  const shownProviders = useShownProviders()
 
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
@@ -30,7 +32,7 @@ export function ProviderList(): React.JSX.Element {
       </Button>
 
       <div className="flex flex-col divide-y border rounded-md overflow-hidden">
-        {CHAT_PROVIDERS.map((provider) => (
+        {shownProviders.map((provider) => (
           <Button
             key={provider.id}
             variant="ghost"

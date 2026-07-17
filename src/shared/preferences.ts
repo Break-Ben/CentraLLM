@@ -1,18 +1,23 @@
+import { ChatProviderId } from '@shared/chat'
+
 const DATE_TIME_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 
-export type PreferenceCategory = 'general' | 'appearance'
+export type PreferenceCategory = 'general' | 'appearance' | 'providers'
 
 export const CATEGORY_LABELS: Record<PreferenceCategory, string> = {
   general: 'General',
-  appearance: 'Appearance'
+  appearance: 'Appearance',
+  providers: 'Providers'
 }
 
 export interface Preferences {
   theme: 'system' | 'light' | 'dark'
+  shownProviderIds: ChatProviderId[]
 }
 
 export const DEFAULTS: Preferences = {
-  theme: 'system'
+  theme: 'system',
+  shownProviderIds: ['chatgpt', 'claude', 'gemini']
 }
 
 export function formatDate(date: Date | number): string {

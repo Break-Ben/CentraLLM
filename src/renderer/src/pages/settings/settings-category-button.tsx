@@ -1,10 +1,11 @@
-import { LucideIcon, Palette, Settings2 } from 'lucide-react'
+import { Bot, LucideIcon, Palette, Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORY_LABELS, PreferenceCategory } from '@shared/preferences'
 
 const NAV_ICONS: Record<PreferenceCategory, LucideIcon> = {
   general: Settings2,
-  appearance: Palette
+  appearance: Palette,
+  providers: Bot
 }
 
 interface SettingsCategoryButtonProps {

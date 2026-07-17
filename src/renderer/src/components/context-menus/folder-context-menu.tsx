@@ -1,9 +1,10 @@
 import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { ContextMenuContent, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu'
+import { useShownProviders } from '@/hooks/use-providers'
 import { useAppStateStore } from '@/stores/app-state-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useNavigationStore } from '@/stores/navigation-store'
-import { getChatProvider, ChatProviderId, CHAT_PROVIDERS } from '@shared/chat'
+import { getChatProvider, ChatProviderId } from '@shared/chat'
 import { FolderRecord } from '@shared/folder'
 import { MessageSquarePlus, FolderPlus, Pencil, Trash2 } from 'lucide-react'
 
@@ -17,6 +18,7 @@ export function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderCont
   const { set } = useAppStateStore((state) => state.actions)
   const { newChat } = useChatStore((state) => state.actions)
   const { setPage } = useNavigationStore((state) => state.actions)
+  const shownProviders = useShownProviders()
 
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
@@ -49,7 +51,7 @@ export function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderCont
 
           <ContextMenuSeparator />
 
-          {CHAT_PROVIDERS.map((provider) => (
+          {shownProviders.map((provider) => (
             <ContextMenuItem key={provider.id} aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} onClick={() => createChat(provider.id)}>
               <ChatProviderLogo providerId={provider.id} />
               <span>{provider.name}</span>

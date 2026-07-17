@@ -6,8 +6,9 @@ import { ButtonGroup } from '@/components/ui/button-group'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { useSidebar } from '@/components/ui/sidebar'
-import { CHAT_PROVIDERS, getChatProvider } from '@shared/chat'
+import { getChatProvider } from '@shared/chat'
 import { useNavigationStore } from '@/stores/navigation-store'
+import { useShownProviders } from '@/hooks/use-providers'
 
 export function NewChatSplitButton(): React.JSX.Element {
   const { state: sidebarState } = useSidebar()
@@ -17,6 +18,7 @@ export function NewChatSplitButton(): React.JSX.Element {
   const { set } = useAppStateStore((state) => state.actions)
   const { newChat } = useChatStore((state) => state.actions)
   const { setPage } = useNavigationStore((state) => state.actions)
+  const shownProviders = useShownProviders()
 
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
@@ -64,7 +66,7 @@ export function NewChatSplitButton(): React.JSX.Element {
         />
         <DropdownMenuContent align="end">
           <DropdownMenuGroup>
-            {CHAT_PROVIDERS.map((provider) => (
+            {shownProviders.map((provider) => (
               <DropdownMenuItem
                 key={provider.id}
                 aria-label={`New ${provider.name} chat`}
