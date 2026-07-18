@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
-import { ChatProviderId, ChatRecord } from '@shared/chat'
+import { ChatProvider, ChatProviderId, ChatRecord } from '@shared/chat'
 import { FolderRecord } from '@shared/folder'
 import { ViewBounds } from '@shared/layout'
 import { AppState } from '@shared/app-state'
@@ -55,6 +55,12 @@ const api = {
       ipcRenderer.on('folders:changed', listener)
       return () => ipcRenderer.removeListener('folders:changed', listener)
     }
+  },
+  customProviders: {
+    list: (): Promise<ChatProvider[]> => ipcRenderer.invoke('customProviders:list'),
+    create: (data: Omit<ChatProvider, 'id'>): Promise<ChatProvider | null> => ipcRenderer.invoke('customProviders:create', data),
+    update: (id: string, data: Omit<ChatProvider, 'id'>): Promise<ChatProvider | null> => ipcRenderer.invoke('customProviders:update', id, data),
+    remove: (id: string): Promise<void> => ipcRenderer.invoke('customProviders:remove', id)
   }
 }
 

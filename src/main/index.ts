@@ -8,7 +8,8 @@ import { ChatRepository } from '@main/repos/chat-repo'
 import { FolderRepository } from '@main/repos/folder-repo'
 import { AppStateRepository } from '@main/repos/app-state-repo'
 import { PreferencesRepository } from '@main/repos/preferences-repo'
-import { ChatProviderId } from '@shared/chat'
+import { CustomProviderRepository } from '@main/repos/custom-provider-repo'
+import { ChatProvider, ChatProviderId } from '@shared/chat'
 import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
 import { Page } from '@shared/navigation'
@@ -23,10 +24,11 @@ let chatRepo: ChatRepository | null = null
 let folderRepo: FolderRepository | null = null
 let appStateRepo: AppStateRepository | null = null
 let preferencesRepo: PreferencesRepository | null = null
+let customProviderRepo: CustomProviderRepository | null = null
 
 function createWindow(): void {
-  if (!chatRepo || !folderRepo) {
-    throw new Error('Chat/folder repository is not initialised')
+  if (!chatRepo || !folderRepo || !customProviderRepo) {
+    throw new Error('Repositories are not initialised')
   }
 
   const getTitleBarOptions = () => ({
@@ -55,7 +57,7 @@ function createWindow(): void {
   nativeTheme.on('updated', () => mainWindow?.setTitleBarOverlay(getTitleBarOptions()))
 
   navigationController = new NavigationController(mainWindow, folderRepo)
-  chatController = new ChatController(mainWindow, chatRepo, navigationController)
+  chatController = new ChatController(mainWindow, chatRepo, navigationController, customProviderRepo)
 
   mainWindow.on('ready-to-show', () => mainWindow?.show())
 
@@ -92,6 +94,7 @@ app.whenReady().then(() => {
   chatRepo = new ChatRepository(db)
   appStateRepo = new AppStateRepository(db)
   preferencesRepo = new PreferencesRepository(db)
+  customProviderRepo = new CustomProviderRepository(db)
 
   nativeTheme.themeSource = preferencesRepo.getAll().theme
 
@@ -116,7 +119,7 @@ app.whenReady().then(() => {
   ipcMain.handle('preferences:get-all', () => preferencesRepo?.getAll() ?? {})
   ipcMain.handle('preferences:set', (_event, key: keyof Preferences, value: Preferences[typeof key]) => {
     if (key === 'theme') {
-      nativeTheme.themeSource = value
+      nativeTheme.themeSource = value as Preferences['theme']
     }
     return preferencesRepo?.set(key, value)
   })
@@ -177,6 +180,24 @@ app.whenReady().then(() => {
   ipcMain.handle('folders:move-after', (_event, folderId: number, afterFolderId: number) => {
     folderRepo?.moveAfter(folderId, afterFolderId)
     emitFoldersChanged()
+  })
+
+  // Custom Providers
+  ipcMain.handle('customProviders:list', () => customProviderRepo?.list() ?? [])
+  ipcMain.handle('customProviders:create', (_event, data: Omit<ChatProvider, 'id'>) => customProviderRepo?.create(data) ?? null)
+  ipcMain.handle('customProviders:update', (_event, id: string, data: Omit<ChatProvider, 'id'>) => customProviderRepo?.update(id, data) ?? null)
+  ipcMain.handle('customProviders:remove', (_event, id: string) => {
+    if (chatRepo && chatController) {
+      const chats = chatRepo.listChats()
+      for (const chat of chats) {
+        if (chat.providerId === id) {
+          chatController.closeChatIfActive(chat.id)
+          chatRepo.removeChat(chat.id)
+        }
+      }
+      emitChatsChanged()
+    }
+    customProviderRepo?.remove(id)
   })
 
   createWindow()

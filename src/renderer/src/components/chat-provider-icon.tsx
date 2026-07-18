@@ -1,5 +1,6 @@
 import { ComponentType, SVGProps } from 'react'
-import { ChatProviderId } from '@shared/chat'
+import { BotMessageSquare } from 'lucide-react'
+import { BuiltInChatProviderId, ChatProviderId } from '@shared/chat'
 
 import ChatGPTLogo from '@/assets/provider-logos/chatgpt.svg?react'
 import ClaudeLogo from '@/assets/provider-logos/claude.svg?react'
@@ -10,7 +11,7 @@ import KimiLogo from '@/assets/provider-logos/kimi.svg?react'
 import MistralLogo from '@/assets/provider-logos/mistral.svg?react'
 import PerplexityLogo from '@/assets/provider-logos/perplexity.svg?react'
 
-const ICON_MAP: Record<ChatProviderId, ComponentType<SVGProps<SVGSVGElement>>> = {
+const ICON_MAP: Record<BuiltInChatProviderId, ComponentType<SVGProps<SVGSVGElement>>> = {
   chatgpt: ChatGPTLogo,
   claude: ClaudeLogo,
   deepseek: DeepSeekLogo,
@@ -26,7 +27,7 @@ interface ChatProviderLogoProps extends Omit<SVGProps<SVGSVGElement>, 'width' | 
   size?: number | string
 }
 
-export function ChatProviderLogo({ providerId, size = 16, ...props }: ChatProviderLogoProps) {
-  const IconComponent = ICON_MAP[providerId]
+export function ChatProviderLogo({ providerId, size = 16, ...props }: ChatProviderLogoProps): React.JSX.Element {
+  const IconComponent = ICON_MAP[providerId as BuiltInChatProviderId] ?? BotMessageSquare
   return <IconComponent {...props} width={size} height={size} />
 }

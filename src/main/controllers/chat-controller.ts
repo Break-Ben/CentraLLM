@@ -1,6 +1,7 @@
 import { BrowserWindow, shell, WebContentsView } from 'electron'
-import { getChatUrl, getNewChatUrl, extractChatLocation, ChatLocation, ChatProviderId, cleanChatTitle, ChatRecord } from '@shared/chat'
+import { ChatLocation, ChatProviderId, ChatProvider, ChatRecord, CHAT_PROVIDERS, getBuiltInProvider } from '@shared/chat'
 import { ChatRepository } from '@main/repos/chat-repo'
+import { CustomProviderRepository } from '@main/repos/custom-provider-repo'
 import { ViewBounds } from '@shared/layout'
 import { NavigationController } from '@main/controllers/navigation-controller'
 
@@ -20,7 +21,8 @@ export class ChatController {
   constructor(
     private readonly window: BrowserWindow,
     private readonly repository: ChatRepository,
-    private readonly navigation: NavigationController
+    private readonly navigation: NavigationController,
+    private readonly customProviderRepository: CustomProviderRepository
   ) {
     this.view = new WebContentsView({
       webPreferences: {
@@ -55,10 +57,6 @@ export class ChatController {
     this.view.webContents.on('page-title-updated', () => this.scheduleSync())
   }
 
-  getActiveChatId(): number | null {
-    return this.activeId
-  }
-
   async start(): Promise<void> {
     this.activeId = null
     this.currentLocation = null
@@ -82,12 +80,11 @@ export class ChatController {
       return
     }
 
-    this.activeId = chat.id
-    this.currentLocation = {
-      providerId: chat.providerId,
-      chatId: chat.chatId
-    }
+    const location: ChatLocation = { providerId: chat.providerId, chatId: chat.chatId }
+    const url = this.getChatUrl(location)
 
+    this.activeId = chat.id
+    this.currentLocation = location
     this.repository.updateLastOpened(chat.id)
     this.emitChatsChanged()
     this.startTitleProtection()
@@ -96,10 +93,12 @@ export class ChatController {
     this.updateAppTitle(chat)
     this.emitActiveChatChanged(chat.id, chat.folderId)
 
-    await this.view.webContents.loadURL(getChatUrl(this.currentLocation)).catch(() => undefined)
+    await this.view.webContents.loadURL(url).catch(() => undefined)
   }
 
   async openNewChat(providerId: ChatProviderId, folderId: number | null = null): Promise<void> {
+    const url = this.getNewChatUrl(providerId)
+
     this.activeId = null
     this.currentLocation = null
     this.pendingNewChatFolderId = folderId
@@ -109,7 +108,7 @@ export class ChatController {
     this.window.setTitle('CentraLLM')
     this.emitActiveChatChanged(null, folderId)
 
-    await this.view.webContents.loadURL(getNewChatUrl(providerId)).catch(() => undefined)
+    await this.view.webContents.loadURL(url).catch(() => undefined)
   }
 
   closeChatIfActive(chatId: number): void {
@@ -125,7 +124,7 @@ export class ChatController {
     this.updateAppTitle()
     this.emitActiveChatChanged(null, null)
 
-    void this.view.webContents.loadURL(getNewChatUrl(providerId)).catch(() => undefined)
+    void this.view.webContents.loadURL(this.getNewChatUrl(providerId)).catch(() => undefined)
   }
 
   destroy(): void {
@@ -137,20 +136,22 @@ export class ChatController {
     this.view.webContents.close()
   }
 
+  getActiveChatId(): number | null {
+    return this.activeId
+  }
+
   private scheduleSync(): void {
     if (this.syncTimeout) {
       clearTimeout(this.syncTimeout)
     }
-    this.syncTimeout = setTimeout(() => {
-      this.performSync()
-    }, SYNC_TIMEOUT_MS)
+    this.syncTimeout = setTimeout(() => this.performSync(), SYNC_TIMEOUT_MS)
   }
 
   private performSync(): void {
     const currentUrl = this.view.webContents.getURL()
     const currentTitle = this.view.webContents.getTitle()
 
-    const location = extractChatLocation(currentUrl)
+    const location = this.extractChatLocation(currentUrl)
     if (!location) {
       this.currentLocation = null
       return
@@ -178,7 +179,7 @@ export class ChatController {
       return
     }
 
-    const chatTitle = cleanChatTitle(currentTitle, location.providerId)
+    const chatTitle = this.cleanChatTitle(currentTitle, location.providerId)
     if (!chatTitle) {
       return
     }
@@ -225,5 +226,75 @@ export class ChatController {
 
   private emitActiveChatChanged(chatId: number | null, folderId: number | null = null): void {
     this.window.webContents.send('chats:active-changed', chatId, folderId)
+  }
+
+  private getChatUrl(chatLocation: ChatLocation): string {
+    const provider = this.getChatProvider(chatLocation.providerId)
+    return provider.chatUrlTemplate.replace('{{chatId}}', chatLocation.chatId)
+  }
+
+  private getNewChatUrl(providerId: ChatProviderId): string {
+    return this.getChatProvider(providerId).newChatUrl
+  }
+
+  private getCustomProviders(): ChatProvider[] {
+    return this.customProviderRepository.list()
+  }
+
+  private getChatProvider(providerId: ChatProviderId): ChatProvider {
+    const builtIn = getBuiltInProvider(providerId)
+    if (builtIn) {
+      return builtIn
+    }
+    const custom = this.getCustomProviders().find((provider) => provider.id === providerId)
+    if (custom) {
+      return custom
+    }
+    throw new Error(`Unknown chat provider: ${providerId}`)
+  }
+
+  private cleanChatTitle(title: string, providerId: ChatProviderId): string {
+    const provider = this.getChatProvider(providerId)
+    const cleanedTitle = title.trim()
+    if (provider.titleSuffix && cleanedTitle.endsWith(provider.titleSuffix)) {
+      return cleanedTitle.slice(0, -provider.titleSuffix.length).trim()
+    }
+    return cleanedTitle
+  }
+
+  private extractChatLocation(rawUrl: string): ChatLocation | null {
+    try {
+      const url = new URL(rawUrl)
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return null
+      }
+
+      const href = url.href
+
+      for (const provider of CHAT_PROVIDERS) {
+        if (!href.startsWith(provider.chatUrlPrefix)) {
+          continue
+        }
+        const chatId = href.slice(provider.chatUrlPrefix.length).split('/')[0]?.split('?')[0]?.trim()
+        if (chatId) {
+          return { providerId: provider.id, chatId }
+        }
+      }
+
+      const customProviders = this.getCustomProviders()
+      for (const provider of customProviders) {
+        if (!href.startsWith(provider.chatUrlPrefix)) {
+          continue
+        }
+        const chatId = href.slice(provider.chatUrlPrefix.length).split('/')[0]?.split('?')[0]?.trim()
+        if (chatId) {
+          return { providerId: provider.id, chatId }
+        }
+      }
+
+      return null
+    } catch {
+      return null
+    }
   }
 }

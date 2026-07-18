@@ -2,7 +2,7 @@ import { useAppStateStore } from '@/stores/app-state-store'
 import { useChatStore } from '@/stores/chat-store'
 import { Button } from '@/components/ui/button'
 import { ChatProviderLogo } from '@/components/chat-provider-icon'
-import { getChatProvider } from '@shared/chat'
+import { getChatProvider } from '@/lib/chat'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useShownProviders } from '@/hooks/use-providers'
 

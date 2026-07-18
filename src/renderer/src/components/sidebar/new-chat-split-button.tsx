@@ -6,7 +6,7 @@ import { ButtonGroup } from '@/components/ui/button-group'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { useSidebar } from '@/components/ui/sidebar'
-import { getChatProvider } from '@shared/chat'
+import { getChatProvider } from '@/lib/chat'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useShownProviders } from '@/hooks/use-providers'
 

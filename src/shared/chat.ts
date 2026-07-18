@@ -1,4 +1,5 @@
-export type ChatProviderId = 'chatgpt' | 'claude' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'mistral' | 'perplexity'
+export type BuiltInChatProviderId = 'chatgpt' | 'claude' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'mistral' | 'perplexity'
+export type ChatProviderId = BuiltInChatProviderId | string
 
 export type ChatProvider = {
   id: ChatProviderId
@@ -88,73 +89,8 @@ export const CHAT_PROVIDERS = [
   }
 ] as const
 
-const CHAT_PROVIDERS_MAP = new Map<ChatProviderId, ChatProvider>(CHAT_PROVIDERS.map((provider) => [provider.id, provider]))
+const CHAT_PROVIDERS_MAP = new Map<string, ChatProvider>(CHAT_PROVIDERS.map((provider) => [provider.id, provider as ChatProvider]))
 
-export function getChatProvider(providerId: ChatProviderId): ChatProvider {
-  const provider = CHAT_PROVIDERS_MAP.get(providerId)
-  if (!provider) {
-    throw new Error(`Unknown chat provider: ${providerId}`)
-  }
-
-  return provider
-}
-
-export function extractChatLocation(rawUrl: string): ChatLocation | null {
-  try {
-    const url = new URL(rawUrl)
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      return null
-    }
-
-    const href = url.href
-    for (const provider of CHAT_PROVIDERS) {
-      if (!href.startsWith(provider.chatUrlPrefix)) {
-        continue
-      }
-
-      const chatId = href.slice(provider.chatUrlPrefix.length).split('/')[0]?.split('?')[0]?.trim()
-      if (!chatId) {
-        continue
-      }
-
-      return {
-        providerId: provider.id,
-        chatId
-      }
-    }
-
-    return null
-  } catch {
-    return null
-  }
-}
-
-export function getChatUrl(chatLocation: ChatLocation): string {
-  const provider = getChatProvider(chatLocation.providerId)
-  return provider.chatUrlTemplate.replace('{{chatId}}', chatLocation.chatId)
-}
-
-export function getNewChatUrl(providerId: ChatProviderId): string {
-  return getChatProvider(providerId).newChatUrl
-}
-
-export function cleanChatTitle(title: string, providerId: ChatProviderId): string {
-  const provider = getChatProvider(providerId)
-  const cleanedTitle = title.trim()
-
-  if (provider.titleSuffix && cleanedTitle.endsWith(provider.titleSuffix)) {
-    return cleanedTitle.slice(0, -provider.titleSuffix.length).trim()
-  }
-
-  return cleanedTitle
-}
-
-export function getChatDisplayName(chat: ChatRecord): string {
-  if (chat.title) {
-    return chat.title
-  }
-
-  const provider = CHAT_PROVIDERS_MAP.get(chat.providerId)
-  const providerName = provider?.name ?? chat.providerId
-  return `${providerName} Chat`
+export function getBuiltInProvider(id: ChatProviderId): ChatProvider | undefined {
+  return CHAT_PROVIDERS_MAP.get(id)
 }

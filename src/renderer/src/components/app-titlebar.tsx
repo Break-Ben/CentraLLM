@@ -5,7 +5,7 @@ import { useChatStore } from '@/stores/chat-store'
 import { useFolderStore } from '@/stores/folder-store'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { FolderRecord } from '@shared/folder'
-import { getChatDisplayName } from '@shared/chat'
+import { getChatDisplayName } from '@/lib/chat'
 import { CATEGORY_LABELS } from '@shared/preferences'
 
 type Crumb = {

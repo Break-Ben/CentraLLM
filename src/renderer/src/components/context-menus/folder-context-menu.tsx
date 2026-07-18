@@ -4,8 +4,9 @@ import { useShownProviders } from '@/hooks/use-providers'
 import { useAppStateStore } from '@/stores/app-state-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useNavigationStore } from '@/stores/navigation-store'
-import { getChatProvider, ChatProviderId } from '@shared/chat'
+import { ChatProviderId } from '@shared/chat'
 import { FolderRecord } from '@shared/folder'
+import { getChatProvider } from '@/lib/chat'
 import { MessageSquarePlus, FolderPlus, Pencil, Trash2 } from 'lucide-react'
 
 interface SidebarFolderContextMenuProps {

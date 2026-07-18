@@ -1,4 +1,4 @@
-import { ChatProviderId, ChatRecord } from '@shared/chat'
+import { ChatProvider, ChatProviderId, ChatRecord } from '@shared/chat'
 import { FolderRecord } from '@shared/folder'
 import { ViewBounds } from '@shared/layout'
 import { AppState } from '@shared/app-state'
@@ -44,6 +44,12 @@ declare global {
         moveBefore: (folderId: number, beforeFolderId: number) => Promise<void>
         moveAfter: (folderId: number, afterFolderId: number) => Promise<void>
         onChanged: (callback: (folders: FolderRecord[]) => void) => () => void
+      }
+      customProviders: {
+        list: () => Promise<ChatProvider[]>
+        create: (data: Omit<ChatProvider, 'id'>) => Promise<ChatProvider | null>
+        update: (id: string, data: Omit<ChatProvider, 'id'>) => Promise<ChatProvider | null>
+        remove: (id: string) => Promise<void>
       }
     }
   }
