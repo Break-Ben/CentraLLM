@@ -8,7 +8,7 @@ import { useAppStateStore } from '@/stores/app-state-store'
 import { ChatProvider, ChatProviderId } from '@shared/chat'
 import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { useShownProviders, useHiddenProviders } from '@/hooks/use-providers'
-import { CustomProviderDialog } from '@/pages/settings/views/custom-provider-dialog'
+import { CustomProviderDialog } from '@/pages/settings/views/providers/custom-provider-dialog'
 
 export function ProvidersView(): React.JSX.Element {
   const shownProviderIds = usePreferencesStore((state) => state.shownProviderIds)

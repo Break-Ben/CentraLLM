@@ -2,9 +2,9 @@ import { useNavigationStore } from '@/stores/navigation-store'
 import { CATEGORY_LABELS, PreferenceCategory } from '@shared/preferences'
 import { SettingsCategoryButton } from '@/pages/settings/settings-category-button'
 
-import { AppearanceView } from '@/pages/settings/views/appearance-view'
-import { GeneralView } from '@/pages/settings/views/general-view'
-import { ProvidersView } from '@/pages/settings/views/providers-view'
+import { AppearanceView } from '@/pages/settings/views/appearance/appearance-view'
+import { GeneralView } from '@/pages/settings/views/general/general-view'
+import { ProvidersView } from '@/pages/settings/views/providers/providers-view'
 
 const CATEGORY_VIEWS: Record<PreferenceCategory, React.ComponentType> = {
   general: GeneralView,

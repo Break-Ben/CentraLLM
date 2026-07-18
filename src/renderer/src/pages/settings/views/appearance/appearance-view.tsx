@@ -1,6 +1,6 @@
 import { SettingsOption } from '@/pages/settings/settings-option'
 import { SettingsSection } from '@/pages/settings/settings-section'
-import { ThemeSelector } from '@/pages/settings/theme-selector'
+import { ThemeSelector } from '@/pages/settings/views/appearance/theme-selector'
 
 export function AppearanceView(): React.JSX.Element {
   return (
