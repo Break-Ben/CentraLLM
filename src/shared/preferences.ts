@@ -25,7 +25,8 @@ export const DEFAULTS: Preferences = {
     newChat: 'Ctrl+T',
     reloadChat: 'Ctrl+R',
     openSettings: 'Ctrl+,',
-    openChatList: 'Ctrl+E'
+    openChatList: 'Ctrl+E',
+    openSearch: 'Ctrl+K'
   }
 }
 

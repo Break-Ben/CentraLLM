@@ -131,6 +131,10 @@ function useCrumbs(): Crumb[] {
       return [root]
     }
 
+    if (page.type === 'search') {
+      return [root, { key: 'search', label: 'Search' }]
+    }
+
     if (page.type === 'settings') {
       return [root, { key: 'settings', label: 'Settings', onClick: () => setPage({ type: 'settings', category: 'general' }) }, { key: 'settings-category', label: CATEGORY_LABELS[page.category] }]
     }

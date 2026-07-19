@@ -1,16 +1,18 @@
 import { Input } from 'electron'
 
-export type ShortcutAction = 'newChat' | 'reloadChat' | 'openSettings' | 'openChatList'
+export type ShortcutAction = 'newChat' | 'reloadChat' | 'openSettings' | 'openSearch' | 'openChatList'
 export type Keybindings = Record<ShortcutAction, string>
 
 export const SHORTCUT_LABELS: Record<ShortcutAction, string> = {
   newChat: 'New Chat',
   reloadChat: 'Reload Chat',
   openSettings: 'Open Settings',
-  openChatList: 'Open Chats Page'
+  openSearch: 'Open Search',
+  openChatList: 'Open Chats'
 }
 export const SHORTCUT_DESCRIPTIONS: Partial<Record<ShortcutAction, string>> = {
-  newChat: 'Opens a new chat with the default provider'
+  newChat: 'Opens a new chat with the default provider',
+  openChatList: 'Opens the full-screen chat list page'
 }
 
 export type KeyEvent = Pick<Input, 'key' | 'control' | 'shift' | 'alt' | 'meta'>

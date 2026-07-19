@@ -281,6 +281,10 @@ function handleShortcutAction(action: ShortcutAction): void {
       chatController?.reloadView()
       break
     }
+    case 'openSearch': {
+      navigationController?.navigateTo({ type: 'search' })
+      break
+    }
     case 'openSettings': {
       navigationController?.navigateTo({ type: 'settings', category: 'general' })
       break
