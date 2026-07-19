@@ -277,6 +277,14 @@ function handleShortcutAction(action: ShortcutAction): void {
       chatController?.reloadView()
       break
     }
+    case 'openSettings': {
+      navigationController?.navigateTo({ type: 'settings', category: 'general' })
+      break
+    }
+    case 'openChatList': {
+      navigationController?.navigateTo({ type: 'chat-list', folderId: null })
+      break
+    }
   }
 }
 

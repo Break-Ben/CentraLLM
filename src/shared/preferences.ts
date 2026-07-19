@@ -23,7 +23,9 @@ export const DEFAULTS: Preferences = {
   shownProviderIds: ['chatgpt', 'claude', 'gemini'],
   keybindings: {
     newChat: 'Ctrl+T',
-    reloadChat: 'Ctrl+R'
+    reloadChat: 'Ctrl+R',
+    openSettings: 'Ctrl+,',
+    openChatList: 'Ctrl+E'
   }
 }
 

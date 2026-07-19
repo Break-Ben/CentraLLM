@@ -1,11 +1,13 @@
 import { Input } from 'electron'
 
-export type ShortcutAction = 'newChat' | 'reloadChat'
+export type ShortcutAction = 'newChat' | 'reloadChat' | 'openSettings' | 'openChatList'
 export type Keybindings = Record<ShortcutAction, string>
 
 export const SHORTCUT_LABELS: Record<ShortcutAction, string> = {
   newChat: 'New Chat',
-  reloadChat: 'Reload Chat'
+  reloadChat: 'Reload Chat',
+  openSettings: 'Open Settings',
+  openChatList: 'Open Chats Page'
 }
 export const SHORTCUT_DESCRIPTIONS: Partial<Record<ShortcutAction, string>> = {
   newChat: 'Opens a new chat with the default provider'
