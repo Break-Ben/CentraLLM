@@ -1,24 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '@/components/ui/sidebar'
-import { FolderPlus, House, MessageSquarePlus, MessagesSquare, Search, Settings } from 'lucide-react'
+import { House, MessagesSquare, Search, Settings } from 'lucide-react'
 import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useFolderStore } from '@/stores/folder-store'
 import { useAppStateStore } from '@/stores/app-state-store'
-import { useUiStore } from '@/stores/ui-store'
 import { useFlatDirectory } from '@/hooks/use-flat-directory'
 import { SidebarChat } from '@/components/sidebar/sidebar-chat'
 import { SidebarFolder } from '@/components/sidebar/sidebar-folder'
 import { NewChatSplitButton } from '@/components/sidebar/new-chat-split-button'
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@/components/ui/context-menu'
-import { ChatProviderLogo } from '@/components/chat-provider-icon'
-import { ChatProviderId } from '@shared/chat'
-import { getChatProvider } from '@/lib/chat'
+import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { DirectoryContextMenu } from '@/components/context-menus/directory-context-menu'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { DragItemData } from '@/constants/directory'
 import { cn } from '@/lib/utils'
-import { useShownProviders } from '@/hooks/use-providers'
 import { usePinnedChats } from '@/hooks/use-pinned-chats'
 
 export function AppSidebar(): React.JSX.Element {
@@ -131,7 +127,7 @@ export function AppSidebar(): React.JSX.Element {
               </SidebarGroupContent>
             </SidebarGroup>
           </ContextMenuTrigger>
-          <AppSidebarContextMenu />
+          <DirectoryContextMenu parentFolderId={null} editingType="sidebar-folder" />
         </ContextMenu>
       </SidebarContent>
 
@@ -148,61 +144,5 @@ export function AppSidebar(): React.JSX.Element {
 
       <SidebarRail />
     </Sidebar>
-  )
-}
-
-function AppSidebarContextMenu(): React.JSX.Element {
-  const lastUsedProviderId = useAppStateStore((state) => state.lastUsedProviderId)
-  const { set } = useAppStateStore((state) => state.actions)
-  const { newChat } = useChatStore((state) => state.actions)
-  const { setPage } = useNavigationStore((state) => state.actions)
-  const { startEditing } = useUiStore((state) => state.actions)
-  const shownProviders = useShownProviders()
-
-  const lastUsedProvider = getChatProvider(lastUsedProviderId)
-
-  const handleNewFolder = async (): Promise<void> => {
-    const newFolder = await window.api.folders.create()
-    if (newFolder) {
-      startEditing({ type: 'sidebar-folder', id: newFolder.id })
-    }
-  }
-
-  const createChat = (providerId: ChatProviderId) => {
-    void set('lastUsedProviderId', providerId)
-    void newChat(providerId)
-    setPage({ type: 'chat', chatId: null, folderId: null })
-  }
-
-  return (
-    <ContextMenuContent>
-      <ContextMenuSub>
-        <ContextMenuSubTrigger>
-          <MessageSquarePlus />
-          <span>New chat</span>
-        </ContextMenuSubTrigger>
-
-        <ContextMenuSubContent>
-          <ContextMenuItem aria-label={`New ${lastUsedProvider.name} chat`} title={`New ${lastUsedProvider.name} chat`} onClick={() => createChat(lastUsedProvider.id)}>
-            <ChatProviderLogo providerId={lastUsedProvider.id} />
-            <span>{lastUsedProvider.name}</span>
-          </ContextMenuItem>
-
-          <ContextMenuSeparator />
-
-          {shownProviders.map((provider) => (
-            <ContextMenuItem aria-label={`New ${provider.name} chat`} title={`New ${provider.name} chat`} key={provider.id} onClick={() => createChat(provider.id)}>
-              <ChatProviderLogo providerId={provider.id} />
-              <span>{provider.name}</span>
-            </ContextMenuItem>
-          ))}
-        </ContextMenuSubContent>
-      </ContextMenuSub>
-
-      <ContextMenuItem onClick={handleNewFolder}>
-        <FolderPlus />
-        <span>New folder</span>
-      </ContextMenuItem>
-    </ContextMenuContent>
   )
 }
