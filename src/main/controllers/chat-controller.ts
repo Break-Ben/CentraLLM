@@ -1,4 +1,4 @@
-import { BrowserWindow, shell, WebContentsView } from 'electron'
+import { BrowserWindow, shell, WebContentsView, Input } from 'electron'
 import { ChatLocation, ChatProviderId, ChatProvider, ChatRecord, CHAT_PROVIDERS, getBuiltInProvider } from '@shared/chat'
 import { ChatRepository } from '@main/repos/chat-repo'
 import { CustomProviderRepository } from '@main/repos/custom-provider-repo'
@@ -125,6 +125,14 @@ export class ChatController {
     this.emitActiveChatChanged(null, null)
 
     void this.view.webContents.loadURL(this.getNewChatUrl(providerId)).catch(() => undefined)
+  }
+
+  reloadView(): void {
+    this.view.webContents.reload()
+  }
+
+  onBeforeViewInput(handler: (event: { preventDefault(): void }, input: Input) => void): void {
+    this.view.webContents.on('before-input-event', handler)
   }
 
   destroy(): void {

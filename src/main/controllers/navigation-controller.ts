@@ -19,6 +19,11 @@ export class NavigationController {
     this.window.setTitle(this.getTitle())
   }
 
+  navigateTo(page: Page): void {
+    this.setPage(page)
+    this.window.webContents.send('navigation:navigate', page)
+  }
+
   setChatTitle(title: string | null): void {
     this.chatTitle = title?.trim() || null
     this.window.setTitle(this.getTitle())

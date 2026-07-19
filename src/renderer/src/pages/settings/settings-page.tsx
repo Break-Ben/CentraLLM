@@ -5,11 +5,13 @@ import { SettingsCategoryButton } from '@/pages/settings/settings-category-butto
 import { AppearanceView } from '@/pages/settings/views/appearance/appearance-view'
 import { GeneralView } from '@/pages/settings/views/general/general-view'
 import { ProvidersView } from '@/pages/settings/views/providers/providers-view'
+import { ShortcutsView } from '@/pages/settings/views/shortcuts/shortcuts-view'
 
 const CATEGORY_VIEWS: Record<PreferenceCategory, React.ComponentType> = {
   general: GeneralView,
   appearance: AppearanceView,
-  providers: ProvidersView
+  providers: ProvidersView,
+  shortcuts: ShortcutsView
 }
 
 export function SettingsPage(): React.JSX.Element {

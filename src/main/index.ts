@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeTheme, Input } from 'electron'
 import { join } from 'path'
 import Database from 'better-sqlite3'
 import { electronApp, is } from '@electron-toolkit/utils'
@@ -12,6 +12,7 @@ import { CustomProviderRepository } from '@main/repos/custom-provider-repo'
 import { ChatProvider, ChatProviderId } from '@shared/chat'
 import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
+import { eventToAccelerator, isModifierOnly, ShortcutAction } from '@shared/shortcuts'
 import { Page } from '@shared/navigation'
 import { NavigationController } from '@main/controllers/navigation-controller'
 
@@ -25,6 +26,8 @@ let folderRepo: FolderRepository | null = null
 let appStateRepo: AppStateRepository | null = null
 let preferencesRepo: PreferencesRepository | null = null
 let customProviderRepo: CustomProviderRepository | null = null
+
+let isRecordingShortcut = false
 
 function createWindow(): void {
   if (!chatRepo || !folderRepo || !customProviderRepo) {
@@ -58,6 +61,9 @@ function createWindow(): void {
 
   navigationController = new NavigationController(mainWindow, folderRepo)
   chatController = new ChatController(mainWindow, chatRepo, navigationController, customProviderRepo)
+
+  mainWindow.webContents.on('before-input-event', handleInputEvent)
+  chatController.onBeforeViewInput(handleInputEvent)
 
   mainWindow.on('ready-to-show', () => mainWindow?.show())
 
@@ -109,6 +115,11 @@ app.whenReady().then(() => {
   })
   ipcMain.on('view:set-visible', (_event, visible: boolean) => {
     chatController?.setVisible(visible)
+  })
+
+  // Shortcuts
+  ipcMain.on('shortcuts:set-recording', (_event, recording: boolean) => {
+    isRecordingShortcut = recording
   })
 
   // App State
@@ -218,6 +229,56 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+function handleInputEvent(event: { preventDefault(): void }, input: Input): void {
+  if (input.type !== 'keyDown') {
+    return
+  }
+
+  if (!preferencesRepo) {
+    throw new Error('Repositories are not initialised')
+  }
+
+  if (isRecordingShortcut) {
+    if (!isModifierOnly(input)) {
+      event.preventDefault()
+      mainWindow?.webContents.send('shortcuts:key-event', input)
+    }
+    return
+  }
+
+  if (isModifierOnly(input)) {
+    return
+  }
+
+  const accelerator = eventToAccelerator(input)
+  const keybindings = preferencesRepo.getAll().keybindings
+  const action = (Object.entries(keybindings) as [ShortcutAction, string][]).find(([, keybinding]) => keybinding === accelerator)?.[0]
+
+  if (action) {
+    event.preventDefault()
+    handleShortcutAction(action)
+  }
+}
+
+function handleShortcutAction(action: ShortcutAction): void {
+  switch (action) {
+    case 'newChat': {
+      if (!appStateRepo) {
+        throw new Error('Repositories are not initialised')
+      }
+      const providerId = appStateRepo.getAll().lastUsedProviderId
+      void chatController?.openNewChat(providerId).then(() => {
+        navigationController?.navigateTo({ type: 'chat', chatId: null, folderId: null })
+      })
+      break
+    }
+    case 'reloadChat': {
+      chatController?.reloadView()
+      break
+    }
+  }
+}
 
 function emitChatsChanged(): void {
   mainWindow?.webContents.send('chats:changed', chatRepo?.listChats() ?? [])

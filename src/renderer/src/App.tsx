@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useNavigationStore } from '@/stores/navigation-store'
 import { useChatStore } from '@/stores/chat-store'
 import { useFolderStore } from '@/stores/folder-store'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
@@ -11,10 +12,12 @@ export default function App(): React.JSX.Element {
   useThemeSync()
 
   useEffect(() => {
+    const cleanupNavigation = useNavigationStore.getState().actions.init()
     const cleanupChats = useChatStore.getState().actions.init()
     const cleanupFolders = useFolderStore.getState().actions.init()
 
     return () => {
+      cleanupNavigation()
       cleanupChats()
       cleanupFolders()
     }

@@ -3,6 +3,7 @@ import { FolderRecord } from '@shared/folder'
 import { ViewBounds } from '@shared/layout'
 import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
+import { KeyEvent } from '@shared/shortcuts'
 import { Page } from '@shared/navigation'
 
 declare global {
@@ -10,10 +11,15 @@ declare global {
     api: {
       navigation: {
         pageChanged: (page: Page) => void
+        onNavigate: (callback: (page: Page) => void) => () => void
       }
       layout: {
         setWebviewBounds: (bounds: ViewBounds) => void
         setWebviewVisible: (visible: boolean) => void
+      }
+      shortcuts: {
+        setRecording: (recording: boolean) => void
+        onKeyEvent: (callback: (input: KeyEvent) => void) => () => void
       }
       appState: {
         getAll: () => Promise<AppState>

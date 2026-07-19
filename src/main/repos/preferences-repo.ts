@@ -27,7 +27,9 @@ export class PreferencesRepository {
   getAll(): Preferences {
     const rows = this.getAllQuery.all()
     const stored = Object.fromEntries(rows.map((row) => [row.key, JSON.parse(row.value)]))
-    return { ...DEFAULTS, ...stored }
+    const merged = { ...DEFAULTS, ...stored } as Preferences
+    merged.keybindings = { ...DEFAULTS.keybindings, ...(merged.keybindings ?? {}) }
+    return merged
   }
 
   set<K extends keyof Preferences>(key: K, value: Preferences[K]): void {

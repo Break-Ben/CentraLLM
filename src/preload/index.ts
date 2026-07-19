@@ -4,15 +4,29 @@ import { FolderRecord } from '@shared/folder'
 import { ViewBounds } from '@shared/layout'
 import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
+import { KeyEvent } from '@shared/shortcuts'
 import { Page } from '@shared/navigation'
 
 const api = {
   navigation: {
-    pageChanged: (page: Page) => ipcRenderer.send('navigation:page-changed', page)
+    pageChanged: (page: Page) => ipcRenderer.send('navigation:page-changed', page),
+    onNavigate: (callback: (page: Page) => void) => {
+      const listener = (_event: IpcRendererEvent, page: Page) => callback(page)
+      ipcRenderer.on('navigation:navigate', listener)
+      return () => ipcRenderer.removeListener('navigation:navigate', listener)
+    }
   },
   layout: {
     setWebviewBounds: (bounds: ViewBounds) => ipcRenderer.send('view:set-bounds', bounds),
     setWebviewVisible: (visible: boolean) => ipcRenderer.send('view:set-visible', visible)
+  },
+  shortcuts: {
+    setRecording: (recording: boolean) => ipcRenderer.send('shortcuts:set-recording', recording),
+    onKeyEvent: (callback: (input: KeyEvent) => void) => {
+      const listener = (_event: IpcRendererEvent, input: KeyEvent) => callback(input)
+      ipcRenderer.on('shortcuts:key-event', listener)
+      return () => ipcRenderer.removeListener('shortcuts:key-event', listener)
+    }
   },
   appState: {
     getAll: (): Promise<AppState> => ipcRenderer.invoke('appState:get-all'),
