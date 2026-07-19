@@ -35,6 +35,7 @@ declare global {
         open: (chatId: number) => Promise<void>
         new: (providerId: ChatProviderId, folderId: number | null) => Promise<void>
         remove: (chatId: number) => Promise<void>
+        togglePin: (chatId: number) => Promise<void>
         moveToFolder: (chatId: number, folderId: number | null) => Promise<void>
         moveBefore: (chatId: number, beforeChatId: number) => Promise<void>
         moveAfter: (chatId: number, afterChatId: number) => Promise<void>

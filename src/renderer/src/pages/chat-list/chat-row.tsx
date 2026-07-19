@@ -3,6 +3,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { attachClosestEdge, extractClosestEdge, Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import { TableCell, TableRow } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { ChatProviderLogo } from '@/components/chat-provider-icon'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { SidebarChatContextMenu } from '@/components/context-menus/chat-context-menu'
@@ -11,6 +12,7 @@ import { getChatProvider } from '@/lib/chat'
 import { getChatDisplayName } from '@/lib/chat'
 import { formatDate } from '@shared/preferences'
 import { DragItemData } from '@/constants/directory'
+import { Pin, PinOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ChatRowProps {
@@ -20,9 +22,10 @@ interface ChatRowProps {
   onOpen: () => void
   onMoveBefore: (sourceId: number, targetId: number) => void
   onMoveAfter: (sourceId: number, targetId: number) => void
+  onTogglePin: (chatId: number) => void
 }
 
-export function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore, onMoveAfter }: ChatRowProps) {
+export function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore, onMoveAfter, onTogglePin }: ChatRowProps) {
   const rowRef = useRef<HTMLTableRowElement | null>(null)
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null)
 
@@ -62,7 +65,7 @@ export function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore, 
       <ContextMenuTrigger className="contents">
         <TableRow
           ref={rowRef}
-          className={cn('cursor-default select-none', closestEdge === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]')}
+          className={cn('h-11 cursor-default select-none', closestEdge === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]', closestEdge === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]')}
           onDoubleClick={onOpen}
         >
           <TableCell>
@@ -78,6 +81,20 @@ export function ChatRow({ chat, isCustomSort, nextChatId, onOpen, onMoveBefore, 
             </span>
           </TableCell>
           <TableCell>{formatDate(chat.lastOpenedAt)}</TableCell>
+          <TableCell>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              title={chat.pinned ? 'Unpin' : 'Pin'}
+              onClick={(e) => {
+                e.stopPropagation()
+                onTogglePin(chat.id)
+              }}
+            >
+              {chat.pinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
+            </Button>
+          </TableCell>
         </TableRow>
       </ContextMenuTrigger>
       <SidebarChatContextMenu chat={chat} />

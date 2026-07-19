@@ -119,7 +119,7 @@ export function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropIt
         <TableRow
           ref={rowRef}
           className={cn(
-            'cursor-default select-none',
+            'h-11 cursor-default select-none',
             dropIndicator === 'inside' && 'bg-accent/60 text-accent-foreground',
             dropIndicator === 'top' && '[&>td]:shadow-[inset_0_2px_0_0_var(--primary)]',
             dropIndicator === 'bottom' && '[&>td]:shadow-[inset_0_-2px_0_0_var(--primary)]'
@@ -140,6 +140,7 @@ export function FolderRow({ folder, isCustomSort, nextFolderId, onOpen, onDropIt
               />
             </span>
           </TableCell>
+          <TableCell className="text-muted-foreground">-</TableCell>
           <TableCell className="text-muted-foreground">-</TableCell>
           <TableCell className="text-muted-foreground">-</TableCell>
         </TableRow>

@@ -161,6 +161,10 @@ app.whenReady().then(() => {
     chatRepo?.moveAfter(chatId, afterChatId)
     emitChatsChanged()
   })
+  ipcMain.handle('chats:toggle-pin', (_event, chatId: number) => {
+    chatRepo?.togglePin(chatId)
+    emitChatsChanged()
+  })
 
   // Folders
   ipcMain.handle('folders:list', () => folderRepo?.listFolders() ?? [])

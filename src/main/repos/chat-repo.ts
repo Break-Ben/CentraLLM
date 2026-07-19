@@ -8,7 +8,8 @@ const SELECT_COLUMNS = `
   title,
   last_opened_at AS lastOpenedAt,
   folder_id AS folderId,
-  custom_order AS customOrder
+  custom_order AS customOrder,
+  pinned
 `
 
 export class ChatRepository {
@@ -23,6 +24,7 @@ export class ChatRepository {
   private readonly updateCustomOrderQuery: Database.Statement<[{ id: number; customOrder: number }], ChatRecord>
   private readonly getMoveBeforeBoundsQuery: Database.Statement<[{ sourceId: number; targetId: number }], { folderId: number | null; targetOrder: number; prevOrder: number | null }>
   private readonly getMoveAfterBoundsQuery: Database.Statement<[{ sourceId: number; targetId: number }], { folderId: number | null; targetOrder: number; nextOrder: number | null }>
+  private readonly togglePinQuery: Database.Statement<[{ id: number }], ChatRecord>
 
   constructor(private readonly db: Database.Database) {
     this.ensureSchema()
@@ -112,6 +114,13 @@ export class ChatRepository {
         ) AS nextOrder
       FROM target
     `)
+
+    this.togglePinQuery = this.db.prepare(`
+      UPDATE chats
+      SET pinned = 1 - pinned
+      WHERE id = :id
+      RETURNING ${SELECT_COLUMNS}
+    `)
   }
 
   listChats(): ChatRecord[] {
@@ -166,6 +175,10 @@ export class ChatRepository {
     return this.updateCustomOrderQuery.get({ id: sourceId, customOrder: newOrder })
   }
 
+  togglePin(id: number): ChatRecord | undefined {
+    return this.togglePinQuery.get({ id })
+  }
+
   private ensureSchema(): void {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS chats (
@@ -176,6 +189,7 @@ export class ChatRepository {
         last_opened_at INTEGER NOT NULL,
         folder_id INTEGER REFERENCES folders(id) ON DELETE CASCADE,
         custom_order REAL,
+        pinned INTEGER NOT NULL DEFAULT 0,
         UNIQUE(provider_id, chat_id)
       );
 

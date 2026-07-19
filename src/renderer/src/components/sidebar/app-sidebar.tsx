@@ -19,6 +19,7 @@ import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/type
 import { DragItemData } from '@/constants/directory'
 import { cn } from '@/lib/utils'
 import { useShownProviders } from '@/hooks/use-providers'
+import { usePinnedChats } from '@/hooks/use-pinned-chats'
 
 export function AppSidebar(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
@@ -27,6 +28,10 @@ export function AppSidebar(): React.JSX.Element {
   const sortingOrder = useAppStateStore((state) => state.sortingOrder)
   const { moveToFolder: moveFolderToFolder } = useFolderStore((state) => state.actions)
   const { moveToFolder: moveChatToFolder } = useChatStore((state) => state.actions)
+
+  const pinnedChats = usePinnedChats()
+  const isCustomSort = sortingOrder === 'custom'
+  const items = useFlatDirectory(sortingOrder, expandedFolderIds)
 
   const [isDragOver, setIsDragOver] = useState(false)
   const groupRef = useRef<HTMLDivElement | null>(null)
@@ -64,9 +69,6 @@ export function AppSidebar(): React.JSX.Element {
     })
   }, [moveChatToFolder, moveFolderToFolder])
 
-  const isCustomSort = sortingOrder === 'custom'
-  const items = useFlatDirectory(sortingOrder, expandedFolderIds)
-
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -93,9 +95,22 @@ export function AppSidebar(): React.JSX.Element {
 
       <SidebarContent>
         <ContextMenu>
-          <ContextMenuTrigger className="flex flex-1 h-full">
+          <ContextMenuTrigger className="flex flex-col flex-1 h-full">
+            {pinnedChats.length > 0 && (
+              <SidebarGroup>
+                <SidebarGroupLabel>Pinned Chats</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {pinnedChats.map((chat) => (
+                      <SidebarChat key={`pinned-${chat.id}`} chat={chat} depth={0} parentFolderId={chat.folderId} isCustomSort={false} />
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
+
             <SidebarGroup ref={groupRef} className={cn(isDragOver && 'bg-sidebar-accent')}>
-              <SidebarGroupLabel>Chats</SidebarGroupLabel>
+              <SidebarGroupLabel>All Chats</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {items.map((item) =>

@@ -42,6 +42,7 @@ const api = {
     open: (chatId: number) => ipcRenderer.invoke('chats:open', chatId),
     new: (providerId: ChatProviderId, folderId: number | null) => ipcRenderer.invoke('chats:new', providerId, folderId),
     remove: (chatId: number) => ipcRenderer.invoke('chats:remove', chatId),
+    togglePin: (chatId: number) => ipcRenderer.invoke('chats:toggle-pin', chatId),
     moveToFolder: (chatId: number, folderId: number | null) => ipcRenderer.invoke('chats:move-to-folder', chatId, folderId),
     moveBefore: (chatId: number, beforeChatId: number) => ipcRenderer.invoke('chats:move-before', chatId, beforeChatId),
     moveAfter: (chatId: number, afterChatId: number) => ipcRenderer.invoke('chats:move-after', chatId, afterChatId),

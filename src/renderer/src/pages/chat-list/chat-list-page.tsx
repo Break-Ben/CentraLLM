@@ -12,7 +12,7 @@ import { ChatRow } from '@/pages/chat-list/chat-row'
 export function ChatListPage(): React.JSX.Element {
   const page = useNavigationStore((state) => state.page)
   const { setPage } = useNavigationStore((state) => state.actions)
-  const { openChat, moveToFolder: moveChatToFolder, moveBefore: moveChatBefore, moveAfter: moveChatAfter } = useChatStore((state) => state.actions)
+  const { openChat, moveToFolder: moveChatToFolder, moveBefore: moveChatBefore, moveAfter: moveChatAfter, togglePin } = useChatStore((state) => state.actions)
   const { moveToFolder: moveFolderToFolder, moveBefore: moveFolderBefore, moveAfter: moveFolderAfter } = useFolderStore((state) => state.actions)
   const sortingOrder = useAppStateStore((state) => state.sortingOrder)
   const { set } = useAppStateStore((state) => state.actions)
@@ -43,14 +43,15 @@ export function ChatListPage(): React.JSX.Element {
         <TableHeader>
           <TableRow>
             <TableHead className="w-1/2">Name</TableHead>
-            <TableHead className="w-1/4">Provider</TableHead>
-            <TableHead className="w-1/4">Last opened</TableHead>
+            <TableHead className="w-1/5">Provider</TableHead>
+            <TableHead className="w-1/5">Last opened</TableHead>
+            <TableHead className="w-1/10">Pinned</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {directoryItems.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={3} className="py-4 text-center text-muted-foreground">
+              <TableCell colSpan={4} className="py-4 text-center text-muted-foreground">
                 This folder is empty
               </TableCell>
             </TableRow>
@@ -94,6 +95,7 @@ export function ChatListPage(): React.JSX.Element {
                     }}
                     onMoveBefore={(sourceId, targetId) => void moveChatBefore(sourceId, targetId)}
                     onMoveAfter={(sourceId, targetId) => void moveChatAfter(sourceId, targetId)}
+                    onTogglePin={(chatId) => void togglePin(chatId)}
                   />
                 )
               }
