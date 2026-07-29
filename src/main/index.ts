@@ -1,5 +1,5 @@
 import os from 'os'
-import { app, shell, BrowserWindow, ipcMain, nativeTheme, Input } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeTheme, Input, Tray, Menu } from 'electron'
 import { join } from 'path'
 import Database from 'better-sqlite3'
 import { electronApp, is } from '@electron-toolkit/utils'
@@ -28,6 +28,8 @@ let appStateRepo: AppStateRepository | null = null
 let preferencesRepo: PreferencesRepository | null = null
 let customProviderRepo: CustomProviderRepository | null = null
 
+let tray: Tray | null = null
+let isQuitting = false
 let isRecordingShortcut = false
 
 function createWindow(): void {
@@ -67,6 +69,14 @@ function createWindow(): void {
   chatController.onBeforeViewInput(handleInputEvent)
 
   mainWindow.on('ready-to-show', () => mainWindow?.show())
+
+  mainWindow.on('close', (event) => {
+    if (!isQuitting && preferencesRepo?.getAll().closeBehaviour === 'minimise-to-tray') {
+      event.preventDefault()
+      mainWindow?.hide()
+      getOrCreateTray()
+    }
+  })
 
   mainWindow.on('closed', () => {
     chatController?.destroy()
@@ -143,6 +153,10 @@ app.whenReady().then(() => {
   ipcMain.handle('preferences:set', (_event, key: keyof Preferences, value: Preferences[typeof key]) => {
     if (key === 'theme') {
       nativeTheme.themeSource = value as Preferences['theme']
+    }
+    if (key === 'closeBehaviour' && value !== 'minimise-to-tray') {
+      tray?.destroy()
+      tray = null
     }
     return preferencesRepo?.set(key, value)
   })
@@ -237,6 +251,9 @@ app.whenReady().then(() => {
 })
 
 app.on('before-quit', () => {
+  isQuitting = true
+  tray?.destroy()
+  tray = null
   db?.close()
 })
 
@@ -306,6 +323,27 @@ function handleShortcutAction(action: ShortcutAction): void {
       break
     }
   }
+}
+
+function getOrCreateTray(): Tray {
+  if (!tray) {
+    tray = new Tray(icon)
+    tray.setToolTip('CentraLLM')
+    tray.setContextMenu(Menu.buildFromTemplate([{ label: 'Show', click: showWindow }, { type: 'separator' }, { label: 'Quit', click: () => app.quit() }]))
+    tray.on('click', showWindow)
+  }
+  return tray
+}
+
+function showWindow(): void {
+  if (!mainWindow) {
+    return
+  }
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore()
+  }
+  mainWindow.show()
+  mainWindow.focus()
 }
 
 function emitChatsChanged(): void {

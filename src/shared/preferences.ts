@@ -13,13 +13,17 @@ export const CATEGORY_LABELS: Record<PreferenceCategory, string> = {
   about: 'About'
 }
 
+export type CloseBehaviour = 'close' | 'minimise-to-tray'
+
 export interface Preferences {
+  closeBehaviour: CloseBehaviour
   theme: 'system' | 'light' | 'dark'
   shownProviderIds: ChatProviderId[]
   keybindings: Keybindings
 }
 
 export const DEFAULTS: Preferences = {
+  closeBehaviour: 'close',
   theme: 'system',
   shownProviderIds: ['chatgpt', 'claude', 'gemini'],
   keybindings: {
