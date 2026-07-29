@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Heart, ExternalLink } from 'lucide-react'
+import { Heart, ExternalLink, Code, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SettingsOption } from '@/pages/settings/settings-option'
 import { SettingsSection } from '@/pages/settings/settings-section'
@@ -23,12 +23,26 @@ export function AboutView(): React.JSX.Element {
         </SettingsOption>
       </SettingsSection>
 
-      <SettingsSection title="Support">
+      <SettingsSection title="Links">
+        <SettingsOption label="Official Website">
+          <Button variant="outline" onClick={() => void window.open('https://centrallm.com')}>
+            <Globe />
+            <span>Website</span>
+            <ExternalLink className="size-3.5 opacity-90" />
+          </Button>
+        </SettingsOption>
+        <SettingsOption label="GitHub Repository">
+          <Button variant="outline" onClick={() => void window.open('https://github.com/Break-Ben/CentraLLM')}>
+            <Code />
+            <span>GitHub</span>
+            <ExternalLink className="size-3.5 opacity-90" />
+          </Button>
+        </SettingsOption>
         <SettingsOption label="Support Development" description="If you find CentraLLM useful, consider supporting its development!">
-          <Button variant="default" onClick={() => void window.open('https://ko-fi.com/break_ben')}>
+          <Button variant="default" onClick={() => void window.open('https://ko-fi.com/Break_Ben')}>
             <Heart className="text-red-500 fill-red-500" />
             <span>Support</span>
-            <ExternalLink className="size-3.5 ml-0.5" />
+            <ExternalLink className="size-3.5 opacity-90" />
           </Button>
         </SettingsOption>
       </SettingsSection>

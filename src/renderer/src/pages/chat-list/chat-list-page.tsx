@@ -33,7 +33,7 @@ export function ChatListPage(): React.JSX.Element {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent alignItemWithTrigger={false}>
+              <SelectContent>
                 {SORTING_OPTIONS.map((item) => (
                   <SelectItem key={item.value} value={item.value}>
                     {item.label}
