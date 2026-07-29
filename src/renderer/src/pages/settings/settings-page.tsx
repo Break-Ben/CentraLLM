@@ -6,12 +6,14 @@ import { AppearanceView } from '@/pages/settings/views/appearance/appearance-vie
 import { GeneralView } from '@/pages/settings/views/general/general-view'
 import { ProvidersView } from '@/pages/settings/views/providers/providers-view'
 import { ShortcutsView } from '@/pages/settings/views/shortcuts/shortcuts-view'
+import { AboutView } from '@/pages/settings/views/about/about-view'
 
 const CATEGORY_VIEWS: Record<PreferenceCategory, React.ComponentType> = {
   general: GeneralView,
   appearance: AppearanceView,
   providers: ProvidersView,
-  shortcuts: ShortcutsView
+  shortcuts: ShortcutsView,
+  about: AboutView
 }
 
 export function SettingsPage(): React.JSX.Element {

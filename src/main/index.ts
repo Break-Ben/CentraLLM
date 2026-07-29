@@ -1,3 +1,4 @@
+import os from 'os'
 import { app, shell, BrowserWindow, ipcMain, nativeTheme, Input } from 'electron'
 import { join } from 'path'
 import Database from 'better-sqlite3'
@@ -103,6 +104,17 @@ app.whenReady().then(() => {
   customProviderRepo = new CustomProviderRepository(db)
 
   nativeTheme.themeSource = preferencesRepo.getAll().theme
+
+  // App Info
+  ipcMain.handle('app:get-info', () => {
+    const osNames = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' }
+    const osName = osNames[process.platform] || os.type()
+
+    return {
+      version: `CentraLLM ${app.getVersion()}`,
+      osVersion: `${osName} ${os.release()} (${os.arch()})`
+    }
+  })
 
   // Navigation
   ipcMain.on('navigation:page-changed', (_event, page: Page) => {

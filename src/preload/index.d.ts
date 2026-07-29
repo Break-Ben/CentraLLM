@@ -5,10 +5,14 @@ import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
 import { KeyEvent } from '@shared/shortcuts'
 import { Page } from '@shared/navigation'
+import { AppInfo } from '@shared/app-info'
 
 declare global {
   interface Window {
     api: {
+      appInfo: {
+        get: () => Promise<AppInfo>
+      }
       navigation: {
         pageChanged: (page: Page) => void
         onNavigate: (callback: (page: Page) => void) => () => void

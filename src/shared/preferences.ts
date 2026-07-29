@@ -3,13 +3,14 @@ import { Keybindings } from '@shared/shortcuts'
 
 const DATE_TIME_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 
-export type PreferenceCategory = 'general' | 'appearance' | 'providers' | 'shortcuts'
+export type PreferenceCategory = 'general' | 'appearance' | 'providers' | 'shortcuts' | 'about'
 
 export const CATEGORY_LABELS: Record<PreferenceCategory, string> = {
   general: 'General',
   appearance: 'Appearance',
   providers: 'Providers',
-  shortcuts: 'Shortcuts'
+  shortcuts: 'Shortcuts',
+  about: 'About'
 }
 
 export interface Preferences {

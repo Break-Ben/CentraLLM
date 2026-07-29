@@ -6,8 +6,12 @@ import { AppState } from '@shared/app-state'
 import { Preferences } from '@shared/preferences'
 import { KeyEvent } from '@shared/shortcuts'
 import { Page } from '@shared/navigation'
+import { AppInfo } from '@shared/app-info'
 
 const api = {
+  appInfo: {
+    get: (): Promise<AppInfo> => ipcRenderer.invoke('app:get-info')
+  },
   navigation: {
     pageChanged: (page: Page) => ipcRenderer.send('navigation:page-changed', page),
     onNavigate: (callback: (page: Page) => void) => {
