@@ -1,10 +1,11 @@
 {
   "name": "centrallm",
-  "version": "0.0.1",
-  "description": "Your all-in-one all for web-based LLMs.",
+  "version": "0.5.0",
+  "description": "The centralised desktop workspace for all your web-based LLMs.",
+  "author": "Break-Ben",
+  "homepage": "https://centrallm.com",
+  "license": "AGPL-3.0-only",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
