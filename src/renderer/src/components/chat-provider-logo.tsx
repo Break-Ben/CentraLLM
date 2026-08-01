@@ -9,6 +9,7 @@ import GeminiLogo from '@/assets/provider-logos/gemini.svg?react'
 import GrokLogo from '@/assets/provider-logos/grok.svg?react'
 import KimiLogo from '@/assets/provider-logos/kimi.svg?react'
 import MistralLogo from '@/assets/provider-logos/mistral.svg?react'
+import NotebookLMLogo from '@/assets/provider-logos/notebooklm.svg?react'
 import PerplexityLogo from '@/assets/provider-logos/perplexity.svg?react'
 
 const ICON_MAP: Record<BuiltInChatProviderId, ComponentType<SVGProps<SVGSVGElement>>> = {
@@ -19,6 +20,7 @@ const ICON_MAP: Record<BuiltInChatProviderId, ComponentType<SVGProps<SVGSVGEleme
   grok: GrokLogo,
   kimi: KimiLogo,
   mistral: MistralLogo,
+  notebooklm: NotebookLMLogo,
   perplexity: PerplexityLogo
 }
 

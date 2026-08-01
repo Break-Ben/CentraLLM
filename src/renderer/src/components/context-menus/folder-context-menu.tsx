@@ -1,4 +1,4 @@
-import { ChatProviderLogo } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-logo'
 import { ContextMenuContent, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu'
 import { useShownProviders } from '@/hooks/use-providers'
 import { useAppStateStore } from '@/stores/app-state-store'

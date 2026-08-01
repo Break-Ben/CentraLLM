@@ -8,7 +8,7 @@ import { useNavigationStore } from '@/stores/navigation-store'
 import { getChatDisplayName, getChatProvider } from '@/lib/chat'
 import { ChatRecord } from '@shared/chat'
 import { FolderRecord } from '@shared/folder'
-import { ChatProviderLogo } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-logo'
 
 type SearchResult = { type: 'chat'; item: ChatRecord; score: number; label: string } | { type: 'folder'; item: FolderRecord; score: number; label: string }
 

@@ -4,7 +4,7 @@ import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-d
 import { attachClosestEdge, extractClosestEdge, Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { ChatProviderLogo } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-logo'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { SidebarChatContextMenu } from '@/components/context-menus/chat-context-menu'
 import { ChatRecord } from '@shared/chat'

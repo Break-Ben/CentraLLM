@@ -32,6 +32,17 @@ export default defineConfig({
         '@resources': resolve(__dirname, 'resources')
       }
     },
-    plugins: [react(), tailwindcss(), svgr()]
+    plugins: [
+      react(),
+      tailwindcss(),
+      svgr({
+        svgrOptions: {
+          plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
+          svgoConfig: {
+            plugins: [{ name: 'prefixIds' }]
+          }
+        }
+      })
+    ]
   }
 })

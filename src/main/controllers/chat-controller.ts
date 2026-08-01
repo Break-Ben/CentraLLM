@@ -1,5 +1,5 @@
 import { BrowserWindow, shell, WebContentsView, Input } from 'electron'
-import { ChatLocation, ChatProviderId, ChatProvider, ChatRecord, CHAT_PROVIDERS, getBuiltInProvider } from '@shared/chat'
+import { ChatLocation, ChatProviderId, ChatProvider, ChatRecord, CHAT_PROVIDERS, getBuiltInProvider, IGNORED_CHAT_IDS } from '@shared/chat'
 import { ChatRepository } from '@main/repos/chat-repo'
 import { CustomProviderRepository } from '@main/repos/custom-provider-repo'
 import { ViewBounds } from '@shared/layout'
@@ -283,7 +283,7 @@ export class ChatController {
         if (!href.startsWith(provider.chatUrlPrefix)) {
           continue
         }
-        const chatId = href.slice(provider.chatUrlPrefix.length).split('/')[0]?.split('?')[0]?.trim()
+        const chatId = this.extractChatId(href, provider.chatUrlPrefix)
         if (chatId) {
           return { providerId: provider.id, chatId }
         }
@@ -294,7 +294,7 @@ export class ChatController {
         if (!href.startsWith(provider.chatUrlPrefix)) {
           continue
         }
-        const chatId = href.slice(provider.chatUrlPrefix.length).split('/')[0]?.split('?')[0]?.trim()
+        const chatId = this.extractChatId(href, provider.chatUrlPrefix)
         if (chatId) {
           return { providerId: provider.id, chatId }
         }
@@ -304,5 +304,13 @@ export class ChatController {
     } catch {
       return null
     }
+  }
+
+  private extractChatId(href: string, prefix: string): string | null {
+    const chatId = href.slice(prefix.length).split('/')[0]?.split('?')[0]?.trim()
+    if (!chatId || IGNORED_CHAT_IDS.has(chatId.toLowerCase())) {
+      return null
+    }
+    return chatId
   }
 }

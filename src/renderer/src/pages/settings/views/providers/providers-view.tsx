@@ -6,7 +6,7 @@ import { usePreferencesStore } from '@/stores/preferences-store'
 import { useCustomProvidersStore } from '@/stores/custom-providers-store'
 import { useAppStateStore } from '@/stores/app-state-store'
 import { ChatProvider, ChatProviderId } from '@shared/chat'
-import { ChatProviderLogo } from '@/components/chat-provider-icon'
+import { ChatProviderLogo } from '@/components/chat-provider-logo'
 import { useShownProviders, useHiddenProviders } from '@/hooks/use-providers'
 import { CustomProviderDialog } from '@/pages/settings/views/providers/custom-provider-dialog'
 

@@ -1,4 +1,4 @@
-export type BuiltInChatProviderId = 'chatgpt' | 'claude' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'mistral' | 'perplexity'
+export type BuiltInChatProviderId = 'chatgpt' | 'claude' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'mistral' | 'notebooklm' | 'perplexity'
 export type ChatProviderId = BuiltInChatProviderId | string
 
 export type ChatProvider = {
@@ -22,6 +22,8 @@ export type ChatRecord = {
 }
 
 export type ChatLocation = Pick<ChatRecord, 'providerId' | 'chatId'>
+
+export const IGNORED_CHAT_IDS = new Set<string>(['new', 'create', 'creating'])
 
 export const CHAT_PROVIDERS = [
   {
@@ -78,6 +80,14 @@ export const CHAT_PROVIDERS = [
     newChatUrl: 'https://chat.mistral.ai/chat',
     chatUrlPrefix: 'https://chat.mistral.ai/chat/',
     chatUrlTemplate: 'https://chat.mistral.ai/chat/{{chatId}}',
+    titleSuffix: ''
+  },
+  {
+    id: 'notebooklm',
+    name: 'Notebook',
+    newChatUrl: 'https://notebook.google.com',
+    chatUrlPrefix: 'https://notebook.google.com/notebook/',
+    chatUrlTemplate: 'https://notebook.google.com/notebook/{{chatId}}',
     titleSuffix: ''
   },
   {
