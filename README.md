@@ -1,6 +1,14 @@
-# CentraLLM
-
-The centralised desktop workspace for all your web-based LLMs.
+<div align="center">
+  <img src="assets/full-logo.png" alt="CentraLLM" width="420">
+  <p><b>The centralised desktop workspace for all your web-based LLMs.</b></p>
+  <p>
+    <a href="https://github.com/Break-Ben/centrallm/releases/latest"><b>⬇️ Download</b></a> &nbsp;•&nbsp;
+    <a href="https://centrallm.com"><b>🌐 Website</b></a> &nbsp;•&nbsp; 
+    <a href="https://ko-fi.com/Break_Ben"><b>☕ Support on Ko-fi</b></a>
+  </p>
+  <br />
+  <img src="assets/screenshot.png" alt="CentraLLM Screenshot" width="100%">
+</div>
 
 ---
 

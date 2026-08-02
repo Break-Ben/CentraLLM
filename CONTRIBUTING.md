@@ -13,16 +13,19 @@ Thank you for your interest in contributing to CentraLLM!
 ## Getting Started
 
 1. Fork the repository and create a feature branch off `main`:
+
 ```bash
 git checkout -b feature/my-new-feature
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Run the development environment:
+
 ```bash
 npm run dev
 ```
