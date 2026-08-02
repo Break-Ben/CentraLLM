@@ -8,6 +8,7 @@ export type ChatProvider = {
   chatUrlPrefix: string
   chatUrlTemplate: string
   titleSuffix: string
+  chatIdExclusionRegex?: string
 }
 
 export type ChatRecord = {
@@ -32,7 +33,8 @@ export const CHAT_PROVIDERS = [
     newChatUrl: 'https://chatgpt.com',
     chatUrlPrefix: 'https://chatgpt.com/c/',
     chatUrlTemplate: 'https://chatgpt.com/c/{{chatId}}',
-    titleSuffix: ''
+    titleSuffix: '',
+    chatIdExclusionRegex: '^WEB:'
   },
   {
     id: 'claude',

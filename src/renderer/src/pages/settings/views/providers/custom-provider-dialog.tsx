@@ -1,4 +1,3 @@
-// Note: The form UI/logic is handled manually and could be improved
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -8,6 +7,7 @@ import { ChatProvider } from '@shared/chat'
 import { usePreferencesStore } from '@/stores/preferences-store'
 import { useCustomProvidersStore } from '@/stores/custom-providers-store'
 import { useShownProviders } from '@/hooks/use-providers'
+import { cn } from '@/lib/utils'
 
 interface CustomProviderDialogProps {
   open: boolean
@@ -20,7 +20,8 @@ const EMPTY_FORM = {
   newChatUrl: '',
   chatUrlPrefix: '',
   chatUrlTemplate: '',
-  titleSuffix: ''
+  titleSuffix: '',
+  chatIdExclusionRegex: ''
 }
 
 export function CustomProviderDialog({ open, provider, onClose }: CustomProviderDialogProps): React.JSX.Element {
@@ -49,7 +50,8 @@ function ProviderFormContent({ provider, onClose }: Omit<CustomProviderDialogPro
           newChatUrl: provider.newChatUrl,
           chatUrlPrefix: provider.chatUrlPrefix,
           chatUrlTemplate: provider.chatUrlTemplate,
-          titleSuffix: provider.titleSuffix
+          titleSuffix: provider.titleSuffix,
+          chatIdExclusionRegex: provider.chatIdExclusionRegex ?? ''
         }
       : EMPTY_FORM
   )
@@ -67,7 +69,8 @@ function ProviderFormContent({ provider, onClose }: Omit<CustomProviderDialogPro
     })
   }
 
-  const isValid = form.name.trim() && form.newChatUrl.trim() && form.chatUrlPrefix.trim() && form.chatUrlTemplate.trim()
+  const isRegexValid = isValidRegex(form.chatIdExclusionRegex)
+  const isValid = form.name.trim() && form.newChatUrl.trim() && form.chatUrlPrefix.trim() && form.chatUrlTemplate.trim() && isRegexValid
 
   const handleSave = async (): Promise<void> => {
     if (!isValid) {
@@ -79,7 +82,8 @@ function ProviderFormContent({ provider, onClose }: Omit<CustomProviderDialogPro
       newChatUrl: form.newChatUrl.trim(),
       chatUrlPrefix: form.chatUrlPrefix.trim(),
       chatUrlTemplate: form.chatUrlTemplate.trim(),
-      titleSuffix: form.titleSuffix.trim()
+      titleSuffix: form.titleSuffix.trim(),
+      chatIdExclusionRegex: form.chatIdExclusionRegex.trim() || undefined
     }
 
     if (provider) {
@@ -135,6 +139,13 @@ function ProviderFormContent({ provider, onClose }: Omit<CustomProviderDialogPro
           <Input value={form.titleSuffix} onChange={(e) => handleChange('titleSuffix', e.target.value)} placeholder=" - My LLM" />
           <p className="text-xs text-muted-foreground">Text appended to the browser tab title when interacting with this provider.</p>
         </div>
+        <div className="space-y-1.5">
+          <Label>
+            Chat ID Exclusion Regex <span className="text-muted-foreground text-xs">(optional)</span>
+          </Label>
+          <Input value={form.chatIdExclusionRegex} onChange={(e) => handleChange('chatIdExclusionRegex', e.target.value)} placeholder="^WEB:" className={cn(!isRegexValid && 'border-destructive focus-visible:ring-destructive')} />
+          {!isRegexValid ? <p className="text-xs text-destructive">Invalid regular expression pattern.</p> : <p className="text-xs text-muted-foreground">Regex pattern for excluding invalid chat IDs that match the chat URL template.</p>}
+        </div>
       </div>
       <div className="flex items-center justify-between pt-2">
         {provider ? (
@@ -155,4 +166,16 @@ function ProviderFormContent({ provider, onClose }: Omit<CustomProviderDialogPro
       </div>
     </>
   )
+}
+
+function isValidRegex(pattern: string): boolean {
+  if (!pattern.trim()) {
+    return true
+  }
+  try {
+    new RegExp(pattern)
+    return true
+  } catch {
+    return false
+  }
 }

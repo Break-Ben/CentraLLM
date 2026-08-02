@@ -283,7 +283,7 @@ export class ChatController {
         if (!href.startsWith(provider.chatUrlPrefix)) {
           continue
         }
-        const chatId = this.extractChatId(href, provider.chatUrlPrefix)
+        const chatId = this.extractChatId(href, provider)
         if (chatId) {
           return { providerId: provider.id, chatId }
         }
@@ -294,7 +294,7 @@ export class ChatController {
         if (!href.startsWith(provider.chatUrlPrefix)) {
           continue
         }
-        const chatId = this.extractChatId(href, provider.chatUrlPrefix)
+        const chatId = this.extractChatId(href, provider)
         if (chatId) {
           return { providerId: provider.id, chatId }
         }
@@ -306,10 +306,20 @@ export class ChatController {
     }
   }
 
-  private extractChatId(href: string, prefix: string): string | null {
-    const chatId = href.slice(prefix.length).split('/')[0]?.split('?')[0]?.trim()
+  private extractChatId(href: string, provider: ChatProvider): string | null {
+    const chatId = href.slice(provider.chatUrlPrefix.length).split('/')[0]?.split('?')[0]?.trim()
     if (!chatId || IGNORED_CHAT_IDS.has(chatId.toLowerCase())) {
       return null
+    }
+    if (provider.chatIdExclusionRegex) {
+      try {
+        const regex = new RegExp(provider.chatIdExclusionRegex, 'i')
+        if (regex.test(chatId)) {
+          return null
+        }
+      } catch {
+        console.log(`Invalid regex pattern for ${provider.name}: "${provider.chatIdExclusionRegex}"`)
+      }
     }
     return chatId
   }
