@@ -3,6 +3,7 @@ import { app, shell, BrowserWindow, ipcMain, nativeTheme, Input, Tray, Menu } fr
 import { join } from 'path'
 import Database from 'better-sqlite3'
 import { electronApp, is } from '@electron-toolkit/utils'
+import { autoUpdater } from 'electron-updater'
 import icon from '@resources/icon.png?asset'
 import { ChatController } from '@main/controllers/chat-controller'
 import { ChatRepository } from '@main/repos/chat-repo'
@@ -68,7 +69,12 @@ function createWindow(): void {
   mainWindow.webContents.on('before-input-event', handleInputEvent)
   chatController.onBeforeViewInput(handleInputEvent)
 
-  mainWindow.on('ready-to-show', () => mainWindow?.show())
+  mainWindow.on('ready-to-show', () => {
+    mainWindow?.show()
+    if (!is.dev) {
+      void autoUpdater.checkForUpdatesAndNotify()
+    }
+  })
 
   mainWindow.on('close', (event) => {
     if (!isQuitting && preferencesRepo?.getAll().closeBehaviour === 'minimise-to-tray') {
@@ -102,6 +108,9 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.break.centrallm')
+
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true
 
   db = new Database(join(app.getPath('userData'), 'centrallm.db'))
   db.pragma('journal_mode = WAL')

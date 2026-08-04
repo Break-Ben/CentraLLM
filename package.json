@@ -5,6 +5,10 @@
   "author": "Break-Ben",
   "homepage": "https://centrallm.com",
   "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Break-Ben/CentraLLM.git"
+  },
   "main": "./out/main/index.js",
   "scripts": {
     "format": "prettier --write .",
@@ -34,6 +38,7 @@
     "better-sqlite3": "^12.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "electron-updater": "^6.8.9",
     "lucide-react": "^1.17.0",
     "shadcn": "^4.10.0",
     "tailwind-merge": "^3.6.0",
