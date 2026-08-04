@@ -33,6 +33,12 @@ let tray: Tray | null = null
 let isQuitting = false
 let isRecordingShortcut = false
 
+app.setName('CentraLLM')
+
+if (is.dev) {
+  app.setPath('userData', join(app.getPath('appData'), `${app.name}-dev`))
+}
+
 function createWindow(): void {
   if (!chatRepo || !folderRepo || !customProviderRepo) {
     throw new Error('Repositories are not initialised')
@@ -45,6 +51,7 @@ function createWindow(): void {
   })
 
   mainWindow = new BrowserWindow({
+    title: 'CentraLLM',
     width: 1500,
     height: 1000,
     show: false,
