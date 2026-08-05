@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ChatProvider } from '@shared/chat'
@@ -42,13 +43,15 @@ function ProviderFormContent({ provider, onClose }: Omit<CustomProviderDialogPro
   const customProvidersActions = useCustomProvidersStore((state) => state.actions)
   const shownProviders = useShownProviders()
 
+  const [hasTitleSuffix, setHasTitleSuffix] = useState(() => provider?.titleSuffix !== undefined)
+
   const [form, setForm] = useState(() =>
     provider
       ? {
           name: provider.name,
           newChatUrl: provider.newChatUrl,
           chatUrlPrefix: provider.chatUrlPrefix,
-          titleSuffix: provider.titleSuffix,
+          titleSuffix: provider.titleSuffix ?? '',
           chatIdExclusionRegex: provider.chatIdExclusionRegex ?? ''
         }
       : EMPTY_FORM
@@ -70,7 +73,7 @@ function ProviderFormContent({ provider, onClose }: Omit<CustomProviderDialogPro
       name: form.name.trim(),
       newChatUrl: form.newChatUrl.trim(),
       chatUrlPrefix: form.chatUrlPrefix.trim(),
-      titleSuffix: form.titleSuffix.trim(),
+      titleSuffix: hasTitleSuffix ? form.titleSuffix.trim() : undefined,
       chatIdExclusionRegex: form.chatIdExclusionRegex.trim() || undefined
     }
 
@@ -104,29 +107,39 @@ function ProviderFormContent({ provider, onClose }: Omit<CustomProviderDialogPro
       <div className="space-y-4 py-2">
         <div className="space-y-1.5">
           <Label>Name</Label>
-          <Input value={form.name} onChange={(e) => handleChange('name', e.target.value)} placeholder="My LLM" />
+          <Input value={form.name} onChange={(event) => handleChange('name', event.target.value)} placeholder="My LLM" />
         </div>
         <div className="space-y-1.5">
           <Label>New Chat URL</Label>
-          <Input value={form.newChatUrl} onChange={(e) => handleChange('newChatUrl', e.target.value)} placeholder="https://example.com/new" />
+          <Input value={form.newChatUrl} onChange={(event) => handleChange('newChatUrl', event.target.value)} placeholder="https://example.com/new" />
         </div>
         <div className="space-y-1.5">
           <Label>Chat URL Prefix</Label>
-          <Input value={form.chatUrlPrefix} onChange={(e) => handleChange('chatUrlPrefix', e.target.value)} placeholder="https://example.com/chat/" />
+          <Input value={form.chatUrlPrefix} onChange={(event) => handleChange('chatUrlPrefix', event.target.value)} placeholder="https://example.com/chat/" />
           <p className="text-xs text-muted-foreground">Used to identify existing chat links belonging to this provider.</p>
         </div>
-        <div className="space-y-1.5">
-          <Label>
-            Title Suffix <span className="text-muted-foreground text-xs">(optional)</span>
-          </Label>
-          <Input value={form.titleSuffix} onChange={(e) => handleChange('titleSuffix', e.target.value)} placeholder=" - My LLM" />
-          <p className="text-xs text-muted-foreground">Text appended to the browser tab title when interacting with this provider.</p>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Checkbox id="hasTitleSuffix" checked={hasTitleSuffix} onCheckedChange={(checked) => setHasTitleSuffix(checked)} />
+            <Label htmlFor="hasTitleSuffix" className="cursor-pointer text-sm">
+              Retrieve chat names from site title
+            </Label>
+          </div>
+          {hasTitleSuffix && (
+            <div className="space-y-1.5 pt-1">
+              <Label>
+                Title Suffix <span className="text-muted-foreground text-xs">(optional)</span>
+              </Label>
+              <Input value={form.titleSuffix} onChange={(event) => handleChange('titleSuffix', event.target.value)} placeholder=" - My LLM" />
+              <p className="text-xs text-muted-foreground">Text appended to the browser tab title when interacting with this provider.</p>
+            </div>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label>
             Chat ID Exclusion Regex <span className="text-muted-foreground text-xs">(optional)</span>
           </Label>
-          <Input value={form.chatIdExclusionRegex} onChange={(e) => handleChange('chatIdExclusionRegex', e.target.value)} placeholder="^WEB:" className={cn(!isRegexValid && 'border-destructive focus-visible:ring-destructive')} />
+          <Input value={form.chatIdExclusionRegex} onChange={(event) => handleChange('chatIdExclusionRegex', event.target.value)} placeholder="^WEB:" className={cn(!isRegexValid && 'border-destructive focus-visible:ring-destructive')} />
           {!isRegexValid ? <p className="text-xs text-destructive">Invalid regular expression pattern.</p> : <p className="text-xs text-muted-foreground">Regex pattern for excluding invalid chat IDs that match the chat URL prefix.</p>}
         </div>
       </div>

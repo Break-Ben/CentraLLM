@@ -187,7 +187,7 @@ export class ChatController {
       return
     }
 
-    const chatTitle = this.cleanChatTitle(currentTitle, location.providerId)
+    const chatTitle = this.cleanChatTitle(currentTitle, location.providerId, existingChat?.title)
     if (!chatTitle) {
       return
     }
@@ -261,8 +261,15 @@ export class ChatController {
     throw new Error(`Unknown chat provider: ${providerId}`)
   }
 
-  private cleanChatTitle(title: string, providerId: ChatProviderId): string {
+  private cleanChatTitle(title: string, providerId: ChatProviderId, existingTitle?: string): string {
     const provider = this.getChatProvider(providerId)
+    if (provider.titleSuffix === undefined) {
+      if (existingTitle) {
+        return existingTitle
+      }
+      const existingCount = this.repository.listChats().filter((chat) => chat.providerId === providerId).length
+      return `${provider.name} Chat ${existingCount + 1}`
+    }
     const cleanedTitle = title.trim()
     if (provider.titleSuffix && cleanedTitle.endsWith(provider.titleSuffix)) {
       return cleanedTitle.slice(0, -provider.titleSuffix.length).trim()

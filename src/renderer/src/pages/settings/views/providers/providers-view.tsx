@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Minus, Plus, Pencil } from 'lucide-react'
+import { Minus, Plus, Pencil, FileX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SettingsSection } from '@/pages/settings/settings-section'
 import { usePreferencesStore } from '@/stores/preferences-store'
@@ -109,11 +109,18 @@ interface ProviderRowProps {
 }
 
 function ProviderRow({ provider, isCustom, onEdit, action }: ProviderRowProps): React.JSX.Element {
+  const titlesDisabled = provider.titleSuffix === undefined
+
   return (
     <div className="flex items-center justify-between text-sm px-4 py-2">
       <div className="flex items-center gap-2">
         <ChatProviderLogo providerId={provider.id} />
         <span>{provider.name}</span>
+        {titlesDisabled && (
+          <span className="inline-flex cursor-help" title="Chat names for this provider are not saved in CentraLLM">
+            <FileX className="size-3.5 text-muted-foreground" />
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-1">
         {isCustom && (

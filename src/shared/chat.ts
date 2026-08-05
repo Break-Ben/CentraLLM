@@ -1,4 +1,5 @@
-export type BuiltInChatProviderId = 'chatgpt' | 'claude' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'mistral' | 'notebooklm' | 'perplexity'
+export type BuiltInChatProviderId = 'chatgpt' | 'claude' | 'copilot' | 'deepseek' | 'gemini' | 'grok' | 'kimi' | 'longcat' | 'meta' | 'minimax' | 'mistral' | 'notebooklm' | 'perplexity' | 'qwen' | 'zai'
+
 export type ChatProviderId = BuiltInChatProviderId | string
 
 export type ChatProvider = {
@@ -6,7 +7,7 @@ export type ChatProvider = {
   name: string
   newChatUrl: string
   chatUrlPrefix: string
-  titleSuffix: string
+  titleSuffix?: string
   chatIdExclusionRegex?: string
 }
 
@@ -23,7 +24,7 @@ export type ChatRecord = {
 
 export type ChatLocation = Pick<ChatRecord, 'providerId' | 'chatId'>
 
-export const IGNORED_CHAT_IDS = new Set<string>(['new', 'create', 'creating'])
+export const IGNORED_CHAT_IDS = new Set<string>(['new', 'new-chat', 'create', 'creating'])
 
 export const CHAT_PROVIDERS = [
   {
@@ -40,6 +41,12 @@ export const CHAT_PROVIDERS = [
     newChatUrl: 'https://claude.ai/new',
     chatUrlPrefix: 'https://claude.ai/chat/',
     titleSuffix: ' - Claude'
+  },
+  {
+    id: 'copilot',
+    name: 'Copilot',
+    newChatUrl: 'https://copilot.microsoft.com',
+    chatUrlPrefix: 'https://copilot.microsoft.com/chats/'
   },
   {
     id: 'deepseek',
@@ -70,6 +77,24 @@ export const CHAT_PROVIDERS = [
     titleSuffix: ' - Kimi'
   },
   {
+    id: 'longcat',
+    name: 'Longcat',
+    newChatUrl: 'https://longcat.chat',
+    chatUrlPrefix: 'https://longcat.chat/c/'
+  },
+  {
+    id: 'meta',
+    name: 'Meta',
+    newChatUrl: 'https://meta.ai',
+    chatUrlPrefix: 'https://meta.ai/prompt/'
+  },
+  {
+    id: 'minimax',
+    name: 'MiniMax',
+    newChatUrl: 'https://agent.minimax.io',
+    chatUrlPrefix: 'https://agent.minimax.io/mavis?id='
+  },
+  {
     id: 'mistral',
     name: 'Mistral Vibe',
     newChatUrl: 'https://chat.mistral.ai/chat',
@@ -89,6 +114,18 @@ export const CHAT_PROVIDERS = [
     newChatUrl: 'https://www.perplexity.ai',
     chatUrlPrefix: 'https://www.perplexity.ai/search/',
     titleSuffix: ''
+  },
+  {
+    id: 'qwen',
+    name: 'Qwen',
+    newChatUrl: 'https://chat.qwen.ai',
+    chatUrlPrefix: 'https://chat.qwen.ai/c/'
+  },
+  {
+    id: 'zai',
+    name: 'Z.ai',
+    newChatUrl: 'https://chat.z.ai',
+    chatUrlPrefix: 'https://chat.z.ai/c/'
   }
 ] as const
 

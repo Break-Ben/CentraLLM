@@ -6,7 +6,8 @@ interface CustomProviderRow {
   name: string
   newChatUrl: string
   chatUrlPrefix: string
-  titleSuffix: string
+  titleSuffix: string | null
+  chatIdExclusionRegex: string | null
 }
 
 const SELECT_COLUMNS = `
@@ -14,13 +15,14 @@ const SELECT_COLUMNS = `
   name,
   new_chat_url AS newChatUrl,
   chat_url_prefix AS chatUrlPrefix,
-  title_suffix AS titleSuffix
+  title_suffix AS titleSuffix,
+  chat_id_exclusion_regex AS chatIdExclusionRegex
 `
 
 export class CustomProviderRepository {
   private readonly listQuery: Database.Statement<[], CustomProviderRow>
-  private readonly createQuery: Database.Statement<[{ name: string; newChatUrl: string; chatUrlPrefix: string; titleSuffix: string }], CustomProviderRow>
-  private readonly updateQuery: Database.Statement<[{ id: number; name: string; newChatUrl: string; chatUrlPrefix: string; titleSuffix: string }], CustomProviderRow>
+  private readonly createQuery: Database.Statement<[{ name: string; newChatUrl: string; chatUrlPrefix: string; titleSuffix: string | null; chatIdExclusionRegex: string | null }], CustomProviderRow>
+  private readonly updateQuery: Database.Statement<[{ id: number; name: string; newChatUrl: string; chatUrlPrefix: string; titleSuffix: string | null; chatIdExclusionRegex: string | null }], CustomProviderRow>
   private readonly deleteQuery: Database.Statement<[{ id: number }], void>
 
   constructor(private readonly db: Database.Database) {
@@ -33,14 +35,14 @@ export class CustomProviderRepository {
     `)
 
     this.createQuery = this.db.prepare(`
-      INSERT INTO custom_providers (name, new_chat_url, chat_url_prefix, title_suffix)
-      VALUES (:name, :newChatUrl, :chatUrlPrefix, :titleSuffix)
+      INSERT INTO custom_providers (name, new_chat_url, chat_url_prefix, title_suffix, chat_id_exclusion_regex)
+      VALUES (:name, :newChatUrl, :chatUrlPrefix, :titleSuffix, :chatIdExclusionRegex)
       RETURNING ${SELECT_COLUMNS}
     `)
 
     this.updateQuery = this.db.prepare(`
       UPDATE custom_providers
-      SET name = :name, new_chat_url = :newChatUrl, chat_url_prefix = :chatUrlPrefix, title_suffix = :titleSuffix
+      SET name = :name, new_chat_url = :newChatUrl, chat_url_prefix = :chatUrlPrefix, title_suffix = :titleSuffix, chat_id_exclusion_regex = :chatIdExclusionRegex
       WHERE id = :id
       RETURNING ${SELECT_COLUMNS}
     `)
@@ -60,7 +62,8 @@ export class CustomProviderRepository {
       name: data.name,
       newChatUrl: data.newChatUrl,
       chatUrlPrefix: data.chatUrlPrefix,
-      titleSuffix: data.titleSuffix
+      titleSuffix: data.titleSuffix ?? null,
+      chatIdExclusionRegex: data.chatIdExclusionRegex ?? null
     })!
     return this.rowToProvider(row)
   }
@@ -75,7 +78,8 @@ export class CustomProviderRepository {
       name: data.name,
       newChatUrl: data.newChatUrl,
       chatUrlPrefix: data.chatUrlPrefix,
-      titleSuffix: data.titleSuffix
+      titleSuffix: data.titleSuffix ?? null,
+      chatIdExclusionRegex: data.chatIdExclusionRegex ?? null
     })
     return row ? this.rowToProvider(row) : null
   }
@@ -101,7 +105,8 @@ export class CustomProviderRepository {
       name: row.name,
       newChatUrl: row.newChatUrl,
       chatUrlPrefix: row.chatUrlPrefix,
-      titleSuffix: row.titleSuffix
+      titleSuffix: row.titleSuffix ?? undefined,
+      chatIdExclusionRegex: row.chatIdExclusionRegex ?? undefined
     }
   }
 
@@ -112,7 +117,8 @@ export class CustomProviderRepository {
         name TEXT NOT NULL,
         new_chat_url TEXT NOT NULL,
         chat_url_prefix TEXT NOT NULL,
-        title_suffix TEXT NOT NULL DEFAULT ''
+        title_suffix TEXT,
+        chat_id_exclusion_regex TEXT
       )
     `)
   }
