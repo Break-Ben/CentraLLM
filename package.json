@@ -1,7 +1,7 @@
 {
   "name": "centrallm",
   "productName": "CentraLLM",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "The centralised desktop workspace for all your web-based LLMs.",
   "author": "Break-Ben",
   "homepage": "https://centrallm.com",
