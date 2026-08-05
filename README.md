@@ -60,8 +60,8 @@ npm run build:unpack
 
 This app is a work-in-progress, and some of the current known issues include:
 
-- **Webview UI Overlap:** Web views overlap UI elements such as right-click context menus.
-- **Page Titles Required:** Chat providers that don't display active chat titles in their page title are currently not supported.
+- **Webview UI Overlap:** The web view overlaps some UI elements such as right-click context menus.
+- **Chat Names:** Chat names are currently only shown if their providers include the chat name in the site title (most major providers do).
 - **Platform Support:** Official support is currently only provided for Windows. Linux likely works, but macOS will encounter issues.
 
 ---
