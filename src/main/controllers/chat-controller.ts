@@ -238,7 +238,7 @@ export class ChatController {
 
   private getChatUrl(chatLocation: ChatLocation): string {
     const provider = this.getChatProvider(chatLocation.providerId)
-    return provider.chatUrlTemplate.replace('{{chatId}}', chatLocation.chatId)
+    return `${provider.chatUrlPrefix}${chatLocation.chatId}`
   }
 
   private getNewChatUrl(providerId: ChatProviderId): string {
@@ -307,7 +307,7 @@ export class ChatController {
   }
 
   private extractChatId(href: string, provider: ChatProvider): string | null {
-    const chatId = href.slice(provider.chatUrlPrefix.length).split('/')[0]?.split('?')[0]?.trim()
+    const chatId = href.slice(provider.chatUrlPrefix.length).split('/')[0]?.split('?')[0]?.split('#')[0]?.split('&')[0]?.trim()
     if (!chatId || IGNORED_CHAT_IDS.has(chatId.toLowerCase())) {
       return null
     }

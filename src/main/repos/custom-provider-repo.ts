@@ -6,7 +6,6 @@ interface CustomProviderRow {
   name: string
   newChatUrl: string
   chatUrlPrefix: string
-  chatUrlTemplate: string
   titleSuffix: string
 }
 
@@ -15,14 +14,13 @@ const SELECT_COLUMNS = `
   name,
   new_chat_url AS newChatUrl,
   chat_url_prefix AS chatUrlPrefix,
-  chat_url_template AS chatUrlTemplate,
   title_suffix AS titleSuffix
 `
 
 export class CustomProviderRepository {
   private readonly listQuery: Database.Statement<[], CustomProviderRow>
-  private readonly createQuery: Database.Statement<[{ name: string; newChatUrl: string; chatUrlPrefix: string; chatUrlTemplate: string; titleSuffix: string }], CustomProviderRow>
-  private readonly updateQuery: Database.Statement<[{ id: number; name: string; newChatUrl: string; chatUrlPrefix: string; chatUrlTemplate: string; titleSuffix: string }], CustomProviderRow>
+  private readonly createQuery: Database.Statement<[{ name: string; newChatUrl: string; chatUrlPrefix: string; titleSuffix: string }], CustomProviderRow>
+  private readonly updateQuery: Database.Statement<[{ id: number; name: string; newChatUrl: string; chatUrlPrefix: string; titleSuffix: string }], CustomProviderRow>
   private readonly deleteQuery: Database.Statement<[{ id: number }], void>
 
   constructor(private readonly db: Database.Database) {
@@ -35,14 +33,14 @@ export class CustomProviderRepository {
     `)
 
     this.createQuery = this.db.prepare(`
-      INSERT INTO custom_providers (name, new_chat_url, chat_url_prefix, chat_url_template, title_suffix)
-      VALUES (:name, :newChatUrl, :chatUrlPrefix, :chatUrlTemplate, :titleSuffix)
+      INSERT INTO custom_providers (name, new_chat_url, chat_url_prefix, title_suffix)
+      VALUES (:name, :newChatUrl, :chatUrlPrefix, :titleSuffix)
       RETURNING ${SELECT_COLUMNS}
     `)
 
     this.updateQuery = this.db.prepare(`
       UPDATE custom_providers
-      SET name = :name, new_chat_url = :newChatUrl, chat_url_prefix = :chatUrlPrefix, chat_url_template = :chatUrlTemplate, title_suffix = :titleSuffix
+      SET name = :name, new_chat_url = :newChatUrl, chat_url_prefix = :chatUrlPrefix, title_suffix = :titleSuffix
       WHERE id = :id
       RETURNING ${SELECT_COLUMNS}
     `)
@@ -62,7 +60,6 @@ export class CustomProviderRepository {
       name: data.name,
       newChatUrl: data.newChatUrl,
       chatUrlPrefix: data.chatUrlPrefix,
-      chatUrlTemplate: data.chatUrlTemplate,
       titleSuffix: data.titleSuffix
     })!
     return this.rowToProvider(row)
@@ -78,7 +75,6 @@ export class CustomProviderRepository {
       name: data.name,
       newChatUrl: data.newChatUrl,
       chatUrlPrefix: data.chatUrlPrefix,
-      chatUrlTemplate: data.chatUrlTemplate,
       titleSuffix: data.titleSuffix
     })
     return row ? this.rowToProvider(row) : null
@@ -105,7 +101,6 @@ export class CustomProviderRepository {
       name: row.name,
       newChatUrl: row.newChatUrl,
       chatUrlPrefix: row.chatUrlPrefix,
-      chatUrlTemplate: row.chatUrlTemplate,
       titleSuffix: row.titleSuffix
     }
   }
@@ -117,7 +112,6 @@ export class CustomProviderRepository {
         name TEXT NOT NULL,
         new_chat_url TEXT NOT NULL,
         chat_url_prefix TEXT NOT NULL,
-        chat_url_template TEXT NOT NULL,
         title_suffix TEXT NOT NULL DEFAULT ''
       )
     `)

@@ -6,7 +6,6 @@ export type ChatProvider = {
   name: string
   newChatUrl: string
   chatUrlPrefix: string
-  chatUrlTemplate: string
   titleSuffix: string
   chatIdExclusionRegex?: string
 }
@@ -32,7 +31,6 @@ export const CHAT_PROVIDERS = [
     name: 'ChatGPT',
     newChatUrl: 'https://chatgpt.com',
     chatUrlPrefix: 'https://chatgpt.com/c/',
-    chatUrlTemplate: 'https://chatgpt.com/c/{{chatId}}',
     titleSuffix: '',
     chatIdExclusionRegex: '^WEB:'
   },
@@ -41,7 +39,6 @@ export const CHAT_PROVIDERS = [
     name: 'Claude',
     newChatUrl: 'https://claude.ai/new',
     chatUrlPrefix: 'https://claude.ai/chat/',
-    chatUrlTemplate: 'https://claude.ai/chat/{{chatId}}',
     titleSuffix: ' - Claude'
   },
   {
@@ -49,7 +46,6 @@ export const CHAT_PROVIDERS = [
     name: 'DeepSeek',
     newChatUrl: 'https://chat.deepseek.com',
     chatUrlPrefix: 'https://chat.deepseek.com/a/chat/s/',
-    chatUrlTemplate: 'https://chat.deepseek.com/a/chat/s/{{chatId}}',
     titleSuffix: ' - DeepSeek'
   },
   {
@@ -57,7 +53,6 @@ export const CHAT_PROVIDERS = [
     name: 'Gemini',
     newChatUrl: 'https://gemini.google.com/app',
     chatUrlPrefix: 'https://gemini.google.com/app/',
-    chatUrlTemplate: 'https://gemini.google.com/app/{{chatId}}',
     titleSuffix: ' - Google Gemini'
   },
   {
@@ -65,7 +60,6 @@ export const CHAT_PROVIDERS = [
     name: 'Grok',
     newChatUrl: 'https://grok.com',
     chatUrlPrefix: 'https://grok.com/c/',
-    chatUrlTemplate: 'https://grok.com/c/{{chatId}}',
     titleSuffix: ' - Grok'
   },
   {
@@ -73,7 +67,6 @@ export const CHAT_PROVIDERS = [
     name: 'Kimi',
     newChatUrl: 'https://www.kimi.com',
     chatUrlPrefix: 'https://www.kimi.com/chat/',
-    chatUrlTemplate: 'https://www.kimi.com/chat/{{chatId}}',
     titleSuffix: ' - Kimi'
   },
   {
@@ -81,7 +74,6 @@ export const CHAT_PROVIDERS = [
     name: 'Mistral Vibe',
     newChatUrl: 'https://chat.mistral.ai/chat',
     chatUrlPrefix: 'https://chat.mistral.ai/chat/',
-    chatUrlTemplate: 'https://chat.mistral.ai/chat/{{chatId}}',
     titleSuffix: ''
   },
   {
@@ -89,7 +81,6 @@ export const CHAT_PROVIDERS = [
     name: 'Notebook',
     newChatUrl: 'https://notebook.google.com',
     chatUrlPrefix: 'https://notebook.google.com/notebook/',
-    chatUrlTemplate: 'https://notebook.google.com/notebook/{{chatId}}',
     titleSuffix: ''
   },
   {
@@ -97,7 +88,6 @@ export const CHAT_PROVIDERS = [
     name: 'Perplexity',
     newChatUrl: 'https://www.perplexity.ai',
     chatUrlPrefix: 'https://www.perplexity.ai/search/',
-    chatUrlTemplate: 'https://www.perplexity.ai/search/{{chatId}}',
     titleSuffix: ''
   }
 ] as const
