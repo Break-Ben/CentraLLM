@@ -86,6 +86,13 @@ export class ChatController {
       return
     }
 
+    if (this.activeId === chat.id) {
+      this.view.setVisible(true)
+      this.updateAppTitle(chat)
+      this.emitActiveChatChanged(chat.id, chat.folderId)
+      return
+    }
+
     const location: ChatLocation = { providerId: chat.providerId, chatId: chat.chatId }
     const url = this.getChatUrl(location)
 
