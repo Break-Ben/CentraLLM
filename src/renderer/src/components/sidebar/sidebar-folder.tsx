@@ -125,6 +125,9 @@ export function SidebarFolder({ folder, depth, parentFolderId, isCustomSort }: S
               const next = isExpanded ? expandedFolderIds.filter((id) => id !== folder.id) : [...expandedFolderIds, folder.id]
               void set('expandedFolderIds', next)
             }}
+            onDoubleClick={() => {
+              startEditing({ type: 'sidebar-folder', id: folder.id })
+            }}
           >
             <ChevronRight className={isExpanded ? 'rotate-90 transition-transform' : 'transition-transform'} />
             <Folder />
