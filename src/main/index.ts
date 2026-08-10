@@ -83,6 +83,10 @@ function createWindow(): void {
     }
   })
 
+  mainWindow.on('focus', () => {
+    chatController?.focusView()
+  })
+
   mainWindow.on('close', (event) => {
     if (!isQuitting && preferencesRepo?.getAll().closeBehaviour === 'minimise-to-tray') {
       event.preventDefault()

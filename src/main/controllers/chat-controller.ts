@@ -72,6 +72,12 @@ export class ChatController {
     this.view.setVisible(visible)
   }
 
+  focusView(): void {
+    if (this.view.getVisible()) {
+      this.view.webContents.focus()
+    }
+  }
+
   async openChat(chatId: number): Promise<void> {
     this.pendingNewChatFolderId = null
 
