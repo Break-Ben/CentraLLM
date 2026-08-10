@@ -7,7 +7,7 @@ import { useNavigationStore } from '@/stores/navigation-store'
 import { ChatProviderId } from '@shared/chat'
 import { FolderRecord } from '@shared/folder'
 import { getChatProvider } from '@/lib/chat'
-import { MessageSquarePlus, FolderPlus, Pencil, Trash2 } from 'lucide-react'
+import { MessageSquarePlus, FolderPlus, Pencil, Trash2, FolderOpen } from 'lucide-react'
 
 interface SidebarFolderContextMenuProps {
   folder: FolderRecord
@@ -38,6 +38,13 @@ export function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderCont
 
   return (
     <ContextMenuContent>
+      <ContextMenuItem onClick={() => setPage({ type: 'chat-list', folderId: folder.id })}>
+        <FolderOpen />
+        <span>View folder</span>
+      </ContextMenuItem>
+
+      <ContextMenuSeparator />
+
       <ContextMenuSub>
         <ContextMenuSubTrigger>
           <MessageSquarePlus />
