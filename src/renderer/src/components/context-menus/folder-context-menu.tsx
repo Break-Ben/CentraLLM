@@ -16,6 +16,7 @@ interface SidebarFolderContextMenuProps {
 
 export function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderContextMenuProps): React.JSX.Element {
   const lastUsedProviderId = useAppStateStore((state) => state.lastUsedProviderId)
+  const expandedFolderIds = useAppStateStore((state) => state.expandedFolderIds)
   const { set } = useAppStateStore((state) => state.actions)
   const { newChat } = useChatStore((state) => state.actions)
   const { setPage } = useNavigationStore((state) => state.actions)
@@ -23,13 +24,21 @@ export function SidebarFolderContextMenu({ folder, onRename }: SidebarFolderCont
 
   const lastUsedProvider = getChatProvider(lastUsedProviderId)
 
+  const ensureFolderExpanded = (): void => {
+    if (!expandedFolderIds.includes(folder.id)) {
+      void set('expandedFolderIds', [...expandedFolderIds, folder.id])
+    }
+  }
+
   const createChat = (providerId: ChatProviderId) => {
+    ensureFolderExpanded()
     void set('lastUsedProviderId', providerId)
     void newChat(providerId, folder.id)
     setPage({ type: 'chat', chatId: null, folderId: folder.id })
   }
 
   const handleNewFolder = async (): Promise<void> => {
+    ensureFolderExpanded()
     const newFolder = await window.api.folders.create(null, folder.id)
     if (newFolder) {
       onRename(newFolder.id)
